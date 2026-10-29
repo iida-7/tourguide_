@@ -9,17 +9,17 @@ const modeConfig: Record<TourMode, { label: string; className: string; rotate: s
     rotate: '-2deg',
   },
   exterior: {
-    label: '👀 밖에서 찰칵(외관)',
+    label: '👀 밖에서 찰칵',
     className: 'border-2 border-warn bg-warn/10 text-warn-ink',
     rotate: '1.5deg',
   },
   window: {
-    label: '🚌 지나가며 조망(차창)',
-    className: 'border-2 border-slate-stamp bg-slate-stamp/10 text-slate-ink',
+    label: '🚌 지나가며 조망',
+    className: 'border-2 border-window bg-window/10 text-window-ink',
     rotate: '-1deg',
   },
   ai: {
-    label: '🤖 AI 판독(참고)',
+    label: '🤖 AI 정밀 판독',
     className: 'border-2 border-dashed border-ai bg-ai/10 text-ai-ink',
     rotate: '2deg',
   },
@@ -49,7 +49,7 @@ export function StampBadge({ mode, onClick, className }: StampBadgeProps) {
         aria-label="AI 판독 근거 보기 (참고용)"
         className={cn(
           base,
-          'min-h-11 cursor-pointer transition-shadow hover:shadow-[3px_3px_0_0_#53299f] focus-visible:shadow-[3px_3px_0_0_#53299f]',
+          'min-h-11 cursor-pointer transition-shadow hover:shadow-[3px_3px_0_0_#334155] focus-visible:shadow-[3px_3px_0_0_#334155]',
         )}
       >
         <TriangleAlert className="size-4 shrink-0" aria-hidden="true" />

@@ -7,14 +7,14 @@ export const metadata: Metadata = {
 }
 
 const layers = [
-  { n: 3, title: '방문지 팩트 해설', desc: '입장/외관/차창 구분까지 검증된 장소별 해설', width: 'w-full', bg: 'bg-mint text-white' },
-  { n: 2, title: '도시/국가 개요', desc: '장소 해설이 없을 때 도시·국가 정보로 안내', width: 'w-[82%]', bg: 'bg-gold text-ink' },
+  { n: 3, title: '방문지 팩트 해설', desc: '입장/외관/차창 구분까지 검증된 장소별 해설', width: 'w-full', bg: 'bg-mint text-ink' },
+  { n: 2, title: '도시/국가 개요', desc: '장소 해설이 없을 때 도시·국가 정보로 안내', width: 'w-[82%]', bg: 'bg-gold text-white' },
   { n: 1, title: '일정 정리 100% 보존', desc: '원문 일정은 하나도 빠짐없이 유지', width: 'w-[64%]', bg: 'bg-ink text-paper' },
 ]
 
 const guards = [
   { n: '①', title: '원문 대조', desc: 'AI가 제시한 문장이 실제 원문에 없으면 즉시 폐기' },
-  { n: '②', title: '선택지 한정', desc: '[입장/외관·차창/체험/자유/판단불가] 외 답변 금지' },
+  { n: '②', title: '선택지 한정', desc: '[입장/외관/차창/판단불가] 외 답변 금지' },
   { n: '③', title: '숫자 조작 방지', desc: '금액 계산은 AI가 아닌 시스템 프로그램이 직접 연산' },
   { n: '④', title: '감정 코멘트 금지', desc: 'AI의 자의적 소설·평가는 일절 배제' },
 ]
@@ -37,7 +37,7 @@ function Section({ n, title, children }: { n: number; title: string; children: R
       <h2 id={`about-${n}`} className="mb-4 flex items-center gap-3 text-base font-black md:text-lg">
         <span
           aria-hidden="true"
-          className="grid size-9 shrink-0 -rotate-6 place-items-center rounded-full border-[3px] border-stamp font-mono text-lg text-stamp"
+          className="grid size-9 shrink-0 -rotate-6 place-items-center rounded-full border-[3px] border-gold font-mono text-lg text-gold-ink"
         >
           {n}
         </span>
@@ -124,7 +124,7 @@ export default function AboutPage() {
       <div className="pb-4 text-center">
         <Link
           href="/"
-          className="inline-flex min-h-11 items-center rounded-md border-[1.5px] border-ink bg-stamp px-5 font-black text-white shadow-hard transition-all hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-hard-sm"
+          className="inline-flex min-h-11 items-center rounded-md border-[1.5px] border-ink bg-ink font-mono px-5 font-black text-white shadow-cta transition-all hover:-translate-x-px hover:-translate-y-px hover:shadow-cta-hover"
         >
           🚀 내 일정 감정하러 가기
         </Link>

@@ -86,7 +86,7 @@ export function ResultView({ result: initialResult }: { result: PackageResult })
               <TabsTrigger
                 key={t.value}
                 value={t.value}
-                className="h-11 flex-none rounded-md border-[1.5px] border-ink/40 bg-card px-4 text-sm font-bold text-ink/70 hover:text-ink data-active:border-ink data-active:bg-gold data-active:text-ink data-active:shadow-hard-sm"
+                className="h-11 flex-none rounded-md border-[1.5px] border-ink/40 bg-card px-4 text-sm font-bold text-ink/70 hover:text-ink data-active:border-ink data-active:bg-navy data-active:text-white data-active:shadow-hard-sm"
               >
                 {t.label}
               </TabsTrigger>

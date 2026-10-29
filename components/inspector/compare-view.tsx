@@ -30,8 +30,8 @@ interface Analysis {
 }
 
 const SIDE_STYLE = {
-  a: { dot: 'bg-mint', text: 'text-mint-ink', cell: 'bg-mint/15', stroke: '#2e9e8f', fill: 'rgba(46,158,143,0.22)' },
-  b: { dot: 'bg-stamp', text: 'text-stamp-ink', cell: 'bg-stamp/15', stroke: '#d8432f', fill: 'rgba(216,67,47,0.18)' },
+  a: { dot: 'bg-mint', text: 'text-mint-ink', cell: 'bg-mint/15', stroke: '#10b981', fill: 'rgba(16,185,129,0.22)' },
+  b: { dot: 'bg-stamp', text: 'text-stamp-ink', cell: 'bg-stamp/15', stroke: '#dc2626', fill: 'rgba(220,38,38,0.18)' },
 } as const
 
 /* ---------- 입력 단계 ---------- */
@@ -125,7 +125,7 @@ function CompareRadar({ ra, rb, nameA, nameB }: { ra: PackageResult; rb: Package
           key={r}
           points={Array.from({ length: n }, (_, i) => pt(i, n, r).join(',')).join(' ')}
           fill="none"
-          stroke="#1F2A44"
+          stroke="#0f172a"
           strokeWidth={r === 1 ? 1.5 : 1}
           strokeDasharray={r === 1 ? undefined : '3 3'}
           opacity={r === 1 ? 1 : 0.35}
@@ -133,14 +133,14 @@ function CompareRadar({ ra, rb, nameA, nameB }: { ra: PackageResult; rb: Package
       ))}
       {ra.stats.map((_, i) => {
         const [x, y] = pt(i, n, 1)
-        return <line key={i} x1={CX} y1={CY} x2={x} y2={y} stroke="#1F2A44" strokeWidth={1} opacity={0.25} />
+        return <line key={i} x1={CX} y1={CY} x2={x} y2={y} stroke="#0f172a" strokeWidth={1} opacity={0.25} />
       })}
       <polygon points={poly(ra.stats)} fill={SIDE_STYLE.a.fill} stroke={SIDE_STYLE.a.stroke} strokeWidth={2.5} />
       <polygon points={poly(rb.stats)} fill={SIDE_STYLE.b.fill} stroke={SIDE_STYLE.b.stroke} strokeWidth={2.5} strokeDasharray="6 3" />
       {ra.stats.map((s, i) => {
         const [x, y] = pt(i, n, 1, R + 26)
         return (
-          <text key={s.key} x={x} y={y} textAnchor="middle" dominantBaseline="middle" fontSize={12} fontWeight={700} fill="#1F2A44">
+          <text key={s.key} x={x} y={y} textAnchor="middle" dominantBaseline="middle" fontSize={12} fontWeight={700} fill="#0f172a">
             {s.shortLabel}
           </text>
         )
@@ -431,7 +431,7 @@ export function CompareView() {
       <button
         type="submit"
         disabled={disabled}
-        className="flex min-h-16 w-full items-center justify-center gap-2 rounded-lg border-[1.5px] border-ink bg-stamp px-4 py-4 text-base font-black text-white shadow-hard transition-all hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-hard-sm active:translate-x-1 active:translate-y-1 active:shadow-none disabled:cursor-not-allowed disabled:border-ink/40 disabled:bg-paper-deep disabled:text-ink/60 disabled:shadow-none disabled:hover:translate-x-0 disabled:hover:translate-y-0 md:text-xl"
+        className="flex min-h-16 w-full items-center justify-center gap-2 rounded-lg border-[1.5px] border-ink bg-ink font-mono px-4 py-4 text-base font-black text-white shadow-cta transition-all hover:-translate-x-px hover:-translate-y-px hover:shadow-cta-hover active:translate-x-0.5 active:translate-y-0.5 active:shadow-none disabled:cursor-not-allowed disabled:border-ink/40 disabled:bg-paper-deep disabled:text-ink/60 disabled:shadow-none disabled:hover:translate-x-0 disabled:hover:translate-y-0 md:text-xl"
       >
         <Scale className="size-5" aria-hidden="true" />
         ⚖️ 두 패키지 나란히 감정하기

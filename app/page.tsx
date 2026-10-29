@@ -6,7 +6,7 @@ export default function HomePage() {
       <section className="relative animate-fade-up pt-4 text-center">
         <span
           aria-hidden="true"
-          className="absolute -top-1 right-2 inline-block rotate-12 rounded border-[3px] border-stamp px-2 py-0.5 font-mono text-xs font-black tracking-widest text-stamp opacity-80 md:right-10 md:text-sm"
+          className="absolute -top-1 right-2 inline-block rotate-12 rounded border-[3px] border-gold px-2 py-0.5 font-mono text-xs font-black tracking-widest text-gold-ink opacity-80 md:right-10 md:text-sm"
         >
           INSPECTED
         </span>

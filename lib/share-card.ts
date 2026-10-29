@@ -12,15 +12,17 @@ const W = 1080
 const H = 1350
 
 const C = {
-  paper: '#fbf6ea',
-  paperDeep: '#f3ead2',
-  ink: '#1f2a44',
-  inkSoft: 'rgba(31,42,68,0.62)',
-  stamp: '#d8432f',
-  stampInk: '#b02f1d',
-  gold: '#e0a82e',
-  mint: '#2e9e8f',
-  mintInk: '#1f7468',
+  paper: '#f8fafc',
+  paperDeep: '#f1f5f9',
+  ink: '#0f172a',
+  inkSoft: 'rgba(15,23,42,0.62)',
+  stamp: '#dc2626',
+  stampInk: '#b91c1c',
+  gold: '#b45309',
+  warn: '#f59e0b',
+  window: '#ea580c',
+  mint: '#10b981',
+  mintInk: '#065f46',
   card: '#ffffff',
 }
 
@@ -177,7 +179,7 @@ function drawSummary(result: PackageResult, stack: string, total: number): HTMLC
   const cy = 370
   ctx.lineWidth = 12
   ctx.strokeStyle = C.stamp
-  ctx.fillStyle = 'rgba(224,168,46,0.2)'
+  ctx.fillStyle = 'rgba(180,83,9,0.2)'
   ctx.beginPath()
   ctx.arc(cx, cy, 160, 0, Math.PI * 2)
   ctx.fill()
@@ -213,7 +215,7 @@ function drawSummary(result: PackageResult, stack: string, total: number): HTMLC
   const lines = wrap(ctx, result.diagnosis, W - 76 * 2 - 60, 2)
   const boxY = 580
   const boxH = 46 + lines.length * 56
-  ctx.fillStyle = 'rgba(224,168,46,0.22)'
+  ctx.fillStyle = 'rgba(180,83,9,0.22)'
   rr(ctx, 76, boxY, W - 152, boxH, 20)
   ctx.fill()
   ctx.setLineDash([14, 10])
@@ -258,9 +260,9 @@ function drawFact(result: PackageResult, stack: string, total: number): HTMLCanv
   const count = (m: string) => items.filter((i) => i.mode === m).length
   const tiles = [
     { label: '🎟️ 내부 입장', n: count('entry'), color: C.mint },
-    { label: '🏛️ 외관만', n: count('exterior'), color: C.gold },
-    { label: '🚌 차창 관광', n: count('window'), color: C.stamp },
-    { label: '🤖 AI 판독', n: count('ai'), color: '#7b4fd0' },
+    { label: '🏛️ 외관만', n: count('exterior'), color: C.warn },
+    { label: '🚌 차창 관광', n: count('window'), color: C.window },
+    { label: '🤖 AI 판독', n: count('ai'), color: '#94a3b8' },
   ]
   const tw = (W - 152 - 30) / 2
   tiles.forEach((t, i) => {
@@ -441,7 +443,7 @@ function drawCompare(
     ([side, name, m, color, ink], i) => {
       const x = 76 + i * (colW + 30)
       const win = summary.overall === side
-      ctx.fillStyle = win ? (side === 'a' ? 'rgba(46,158,143,0.16)' : 'rgba(216,67,47,0.14)') : C.card
+      ctx.fillStyle = win ? (side === 'a' ? 'rgba(16,185,129,0.16)' : 'rgba(220,38,38,0.14)') : C.card
       rr(ctx, x, 160, colW, 300, 22)
       ctx.fill()
       ctx.strokeStyle = C.ink

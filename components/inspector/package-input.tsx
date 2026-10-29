@@ -18,7 +18,7 @@ const placeholder = `제 1일 : 인천 출발 - 파리 샤를드골 공항 도�
 
 function status(count: number) {
   if (count > MAX_CHARS) return { label: '초과', cls: 'bg-stamp text-white border-stamp-ink' }
-  if (count >= WARN_CHARS) return { label: '주의', cls: 'bg-warn text-white border-warn-ink' }
+  if (count >= WARN_CHARS) return { label: '주의', cls: 'bg-warn/15 text-warn-ink border-warn-ink' }
   return { label: '정상', cls: 'bg-mint text-white border-mint-ink' }
 }
 
@@ -26,7 +26,7 @@ function StepCard({ step, title, children }: { step: number; title: string; chil
   return (
     <section className="rounded-lg border-[1.5px] border-ink bg-card p-4 shadow-hard md:p-6">
       <h2 className="mb-3 flex items-center gap-2 text-base font-black md:text-lg">
-        <span className="rounded border-[1.5px] border-ink bg-gold px-2 py-0.5 font-mono text-xs shadow-hard-sm">
+        <span className="rounded border-[1.5px] border-ink bg-gold text-white px-2 py-0.5 font-mono text-xs shadow-hard-sm">
           STEP {step}
         </span>
         {title}
@@ -278,7 +278,7 @@ export function PackageInput() {
         <button
           type="submit"
           disabled={disabled}
-          className="relative flex min-h-16 w-full items-center justify-center gap-2 overflow-hidden rounded-lg border-[1.5px] border-ink bg-stamp px-4 py-4 text-base font-black text-white shadow-hard transition-all hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-hard-sm active:translate-x-1 active:translate-y-1 active:shadow-none disabled:cursor-not-allowed disabled:border-ink/40 disabled:bg-paper-deep disabled:text-ink/60 disabled:shadow-none disabled:hover:translate-x-0 disabled:hover:translate-y-0 md:text-xl"
+          className="relative flex min-h-16 w-full items-center justify-center gap-2 overflow-hidden rounded-lg border-[1.5px] border-ink bg-ink font-mono px-4 py-4 text-base font-black text-white shadow-cta transition-all hover:-translate-x-px hover:-translate-y-px hover:shadow-cta-hover active:translate-x-0.5 active:translate-y-0.5 active:shadow-none disabled:cursor-not-allowed disabled:border-ink/40 disabled:bg-paper-deep disabled:text-ink/60 disabled:shadow-none disabled:hover:translate-x-0 disabled:hover:translate-y-0 md:text-xl"
         >
           {loading ? (
             <>
@@ -286,7 +286,7 @@ export function PackageInput() {
               {loadingMsg}
               <span
                 aria-hidden="true"
-                className="animate-scan absolute inset-x-0 top-0 h-1 bg-gold shadow-[0_0_12px_3px_rgba(224,168,46,0.9)]"
+                className="animate-scan absolute inset-x-0 top-0 h-1 bg-gold shadow-[0_0_12px_3px_rgba(180,83,9,0.9)]"
               />
             </>
           ) : (
@@ -305,7 +305,6 @@ export function PackageInput() {
         <ul className="list-disc space-y-1 pl-5 text-sm leading-relaxed">
           <li>입력하신 원문은 기본적으로 브라우저에서만 분석되며 서버에 저장되지 않습니다.</li>
           <li>&lsquo;입장/외관&rsquo; 구분이 애매한 문장 몇 줄만 Gemini AI 보조 판독을 위해 전송됩니다. (키가 설정된 경우에만, 전체 원문은 보내지 않아요)</li>
-          <li>지원 국가: 서유럽/동유럽/지중해 주요 15개국 (도시 인식률 95% 이상)</li>
         </ul>
       </aside>
     </form>

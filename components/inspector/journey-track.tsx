@@ -13,7 +13,7 @@ function CityNode({ node }: { node: JourneyNode }) {
     <div className="flex items-center gap-3 md:w-24 md:flex-col md:gap-2">
       <span
         className={`flex size-11 shrink-0 items-center justify-center rounded-full border-[1.5px] border-ink font-mono text-sm font-bold shadow-hard-sm ${
-          isEnd ? 'bg-ink text-paper' : 'bg-gold text-ink'
+          isEnd ? 'bg-ink text-paper' : 'bg-gold text-white'
         }`}
         aria-hidden="true"
       >

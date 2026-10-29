@@ -35,7 +35,7 @@ function DayCard({ day, onOpenAi }: { day: DaySchedule; onOpenAi: (r: AiReason) 
   return (
     <li className="animate-fade-up rounded-lg border-[1.5px] border-ink bg-card shadow-hard">
       <header className="flex flex-col gap-1 border-b-[1.5px] border-dashed border-ink/60 px-4 py-3 md:flex-row md:items-center md:gap-4">
-        <span className="w-fit rounded-md border-[1.5px] border-ink bg-gold px-2.5 py-1 font-mono text-sm font-bold shadow-hard-sm">
+        <span className="w-fit rounded-md border-[1.5px] border-ink bg-gold text-white px-2.5 py-1 font-mono text-sm font-bold shadow-hard-sm">
           DAY {day.day}
         </span>
         <h3 className="text-base font-black md:text-lg">

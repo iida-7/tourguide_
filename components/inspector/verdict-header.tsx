@@ -70,9 +70,9 @@ export function GradeStamp({ grade }: { grade: string }) {
       role="img"
       aria-label={`종합 등급 ${grade}`}
       style={{ '--rot': '-8deg', '--stamp-opacity': '0.92' } as React.CSSProperties}
-      className="relative flex size-36 shrink-0 animate-stamp-in items-center justify-center rounded-full border-[5px] border-double border-stamp bg-gold/20 text-stamp-ink md:size-44"
+      className="relative flex size-36 shrink-0 animate-stamp-in items-center justify-center rounded-full border-[5px] border-double border-gold bg-gold/20 text-gold-ink md:size-44"
     >
-      <span className="absolute inset-2 rounded-full border-2 border-stamp/70" aria-hidden="true" />
+      <span className="absolute inset-2 rounded-full border-2 border-gold/70" aria-hidden="true" />
       <div className="text-center leading-none">
         <p className="text-[10px] font-black tracking-[0.25em] md:text-xs">INSPECTED</p>
         <p className="my-1 font-mono text-6xl font-bold tracking-tighter md:text-7xl">{grade}</p>

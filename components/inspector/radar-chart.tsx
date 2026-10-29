@@ -31,8 +31,8 @@ export function RadarChart({ stats }: { stats: StatItem[] }) {
         <polygon
           key={r}
           points={polygon(n, () => r)}
-          fill={r === 1 ? 'rgba(224,168,46,0.10)' : 'none'}
-          stroke="#1F2A44"
+          fill={r === 1 ? 'rgba(180,83,9,0.10)' : 'none'}
+          stroke="#0f172a"
           strokeWidth={r === 1 ? 1.5 : 1}
           strokeDasharray={r === 1 ? undefined : '3 3'}
           opacity={r === 1 ? 1 : 0.4}
@@ -40,7 +40,7 @@ export function RadarChart({ stats }: { stats: StatItem[] }) {
       ))}
       {stats.map((_, i) => {
         const [x, y] = point(i, n, 1)
-        return <line key={i} x1={CX} y1={CY} x2={x} y2={y} stroke="#1F2A44" strokeWidth={1} opacity={0.35} />
+        return <line key={i} x1={CX} y1={CY} x2={x} y2={y} stroke="#0f172a" strokeWidth={1} opacity={0.35} />
       })}
 
       <g
@@ -49,15 +49,15 @@ export function RadarChart({ stats }: { stats: StatItem[] }) {
       >
         <polygon
           points={polygon(n, (i) => (stats[i].max ? stats[i].score / stats[i].max : 0))}
-          fill="rgba(216,67,47,0.28)"
-          stroke="#D8432F"
+          fill="rgba(220,38,38,0.28)"
+          stroke="#dc2626"
           strokeWidth={2.5}
           strokeLinejoin="round"
         />
         {stats.map((s, i) => {
           const ratio = s.max ? s.score / s.max : 0
           const [x, y] = point(i, n, ratio)
-          return <circle key={s.key} cx={x} cy={y} r={4.5} fill="#E0A82E" stroke="#1F2A44" strokeWidth={1.5} />
+          return <circle key={s.key} cx={x} cy={y} r={4.5} fill="#b45309" stroke="#0f172a" strokeWidth={1.5} />
         })}
       </g>
 
@@ -72,7 +72,7 @@ export function RadarChart({ stats }: { stats: StatItem[] }) {
               textAnchor={anchor}
               fontSize={13}
               fontWeight={700}
-              fill="#1F2A44"
+              fill="#0f172a"
               style={{ fontFamily: 'var(--font-noto-kr), sans-serif' }}
             >
               {s.shortLabel}
@@ -83,7 +83,7 @@ export function RadarChart({ stats }: { stats: StatItem[] }) {
               textAnchor={anchor}
               fontSize={12}
               fontWeight={700}
-              fill="#B02F1D"
+              fill="#b91c1c"
               style={{ fontFamily: 'var(--font-plex-mono), monospace' }}
             >
               {s.score}/{s.max}

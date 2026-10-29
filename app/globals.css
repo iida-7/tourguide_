@@ -3,8 +3,9 @@
 @import 'shadcn/tailwind.css';
 
 @theme inline {
-  --font-sans: var(--font-noto-kr), 'Apple SD Gothic Neo', system-ui, sans-serif;
-  --font-mono: var(--font-plex-mono), var(--font-noto-kr), ui-monospace, monospace;
+  --font-sans: var(--font-work-sans), var(--font-noto-kr), 'Apple SD Gothic Neo', system-ui, sans-serif;
+  --font-display: var(--font-space-grotesk), var(--font-noto-kr), 'Apple SD Gothic Neo', system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), var(--font-noto-kr), ui-monospace, monospace;
 
   --color-ring: var(--ring);
   --color-input: var(--input);
@@ -25,21 +26,31 @@
   --color-foreground: var(--foreground);
   --color-background: var(--background);
 
-  --color-ink: #1f2a44;
-  --color-paper: #fbf6ea;
-  --color-paper-deep: #f3ead2;
-  --color-stamp: #d8432f;
-  --color-stamp-ink: #b02f1d;
-  --color-gold: #e0a82e;
-  --color-gold-ink: #7a560a;
-  --color-mint: #2e9e8f;
-  --color-mint-ink: #146357;
-  --color-warn: #e8782a;
-  --color-warn-ink: #9a420c;
-  --color-slate-stamp: #5b6b8a;
-  --color-slate-ink: #38465f;
-  --color-ai: #7b4fd0;
-  --color-ai-ink: #53299f;
+  /* DESIGN.md: ink-primary / paper-canvas / paper-tint / secondary(Navy Archive) */
+  --color-ink: #0f172a;
+  --color-paper: #f8fafc;
+  --color-paper-deep: #f1f5f9;
+  --color-navy: #1e3a8a;
+  /* alert-crimson */
+  --color-stamp: #dc2626;
+  --color-stamp-ink: #b91c1c;
+  /* stamp-gold */
+  --color-gold: #b45309;
+  --color-gold-ink: #92400e;
+  /* inspect-official */
+  --color-mint: #10b981;
+  --color-mint-ink: #065f46;
+  /* inspect-exterior */
+  --color-warn: #f59e0b;
+  --color-warn-ink: #92400e;
+  /* inspect-window */
+  --color-window: #ea580c;
+  --color-window-ink: #9a3412;
+  /* AI inference badge (slate) */
+  --color-slate-stamp: #94a3b8;
+  --color-slate-ink: #334155;
+  --color-ai: #94a3b8;
+  --color-ai-ink: #334155;
 
   --radius-sm: 4px;
   --radius-md: 6px;
@@ -49,9 +60,11 @@
   --radius-3xl: 14px;
   --radius-4xl: 16px;
 
-  --shadow-hard: 4px 4px 0 0 #1f2a44;
-  --shadow-hard-sm: 2px 2px 0 0 #1f2a44;
-  --shadow-hard-lg: 6px 6px 0 0 #1f2a44;
+  --shadow-hard: 4px 4px 0 0 #0f172a;
+  --shadow-hard-sm: 2px 2px 0 0 #0f172a;
+  --shadow-hard-lg: 6px 6px 0 0 #0f172a;
+  --shadow-cta: 3px 3px 0 0 #1e3a8a;
+  --shadow-cta-hover: 5px 5px 0 0 #1e3a8a;
 
   --animate-stamp-in: stamp-in 0.55s cubic-bezier(0.2, 1.4, 0.4, 1) both;
   --animate-fade-up: fade-up 0.5s ease-out both;
@@ -62,24 +75,24 @@
 
 :root {
   color-scheme: light;
-  --background: #fbf6ea;
-  --foreground: #1f2a44;
-  --card: #fffdf6;
-  --card-foreground: #1f2a44;
-  --popover: #fffdf6;
-  --popover-foreground: #1f2a44;
-  --primary: #1f2a44;
-  --primary-foreground: #fbf6ea;
-  --secondary: #f3ead2;
-  --secondary-foreground: #1f2a44;
-  --muted: #f3ead2;
-  --muted-foreground: #4a5573;
-  --accent: #f3ead2;
-  --accent-foreground: #1f2a44;
-  --destructive: #b02f1d;
-  --border: #1f2a44;
-  --input: #1f2a44;
-  --ring: #2e9e8f;
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --popover: #ffffff;
+  --popover-foreground: #0f172a;
+  --primary: #0f172a;
+  --primary-foreground: #f8fafc;
+  --secondary: #f1f5f9;
+  --secondary-foreground: #0f172a;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  --accent: #f1f5f9;
+  --accent-foreground: #0f172a;
+  --destructive: #b91c1c;
+  --border: #0f172a;
+  --input: #0f172a;
+  --ring: #1e3a8a;
   --radius: 0.5rem;
 }
 
@@ -93,16 +106,22 @@
   body {
     @apply bg-paper font-sans text-ink antialiased;
     background-image:
-      radial-gradient(rgba(31, 42, 68, 0.07) 1px, transparent 1px),
-      linear-gradient(rgba(31, 42, 68, 0.035) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(31, 42, 68, 0.035) 1px, transparent 1px);
+      radial-gradient(rgba(15, 23, 42, 0.07) 1px, transparent 1px),
+      linear-gradient(rgba(15, 23, 42, 0.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(15, 23, 42, 0.035) 1px, transparent 1px);
     background-size:
       22px 22px,
       44px 44px,
       44px 44px;
   }
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+  }
   :focus-visible {
-    outline: 3px solid #2e9e8f;
+    outline: 3px solid #1e3a8a;
     outline-offset: 2px;
   }
 }
