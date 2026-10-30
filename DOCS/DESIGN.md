@@ -214,7 +214,7 @@ The font architecture splits operational labor into three distinct voices:
 
 1. **Headlines (`Space Grotesk`):** Industrial, geometric, and authoritative. Gives titles and statistical metrics the structural weight of an analytical report.
 2. **Body Text (`Work Sans`):** Balanced, neutral Latin face for numerals and embedded Latin terms; Hangul in body copy is set by the `Noto Sans KR` fallback (see Korean Glyph Fallback), so complex itineraries and disclaimer paragraphs read without eye strain.
-3. **Badges & Metadata (`JetBrains Mono`):** Tabular figures, day codes (`DAY 03`), line pointers (`L142`), currency sums (`₩1,890,000`), and official verification tags (`STATUS: VERIFIED`). Tabular spacing prevents alignment jitter when numbers fluctuate.
+3. **Badges & Metadata (`JetBrains Mono`):** Tabular figures, day codes (`DAY 03`), line pointers (`L-142`), currency sums (`₩1,890,000`), and official verification tags (`STATUS: VERIFIED`). Tabular spacing prevents alignment jitter when numbers fluctuate.
 
 ### Korean Glyph Fallback
 Space Grotesk, Work Sans and JetBrains Mono contain **Latin glyphs only**. All three stacks fall back to `Noto Sans KR` (then `Apple SD Gothic Neo`, system sans) for Hangul, so Korean text renders in Noto Sans KR at weights 400/500/700/900 while Latin text and numerals use the primary face. Space Grotesk tops out at weight 700, so `font-black` headings and `stamp-seal` render at 700 for Latin characters.
@@ -226,8 +226,12 @@ Space Grotesk, Work Sans and JetBrains Mono contain **Latin glyphs only**. All t
 ## Layout & Spacing
 
 ### Mobile-First Constraint & Layout Grid
-- **Primary Canvas:** Designed against a 390px mobile viewport, single column. At `md` (768px) the content container is centered with a **`1080px` maximum width** and cards switch to multi-column grids (e.g. 4-up inventory, horizontal journey track). There is no separate split-column dashboard layout.
-- **Outer Canvas Margins:** Strict `1rem` (16px) edge padding on mobile devices ensures maximum usable width for complex comparison rows. Expands to `1.5rem` (24px) from `md` upward (the `margin-desktop` token of `2.5rem` is reserved for future wide layouts and is not currently applied).
+- **Primary Canvas:** Designed against a 390px mobile viewport, single column. At `md` (768px) cards switch to multi-column grids (4-up inventory, horizontal journey track). From `lg` (1024px) the content becomes an analytical **split-column dashboard** inside a centered `1280px` container: on `/result` a sticky 360px verdict rail (coverage, grade stamp, diagnosis) beside the analysis tabs; on `/` the itinerary textarea (STEP 1) beside the month, audit and privacy cards.
+- **Outer Canvas Margins:** Strict `1rem` (16px) edge padding on mobile devices ensures maximum usable width for complex comparison rows, `1.5rem` (24px) at `md`, and `2.5rem` (40px, `margin-desktop`) from `lg` with centered container lockups.
+
+### Implementation Tokens (`app/globals.css`)
+- Typography tokens are exposed as Tailwind utilities `text-headline-xl|xl-mobile|lg|md|sm`, `text-body-lg|md|sm`, `text-label-lg|md|sm`, `text-stamp-seal`; each carries its size, line-height, letter-spacing and weight from the table above. Pair labels with `font-mono`, headlines with `font-display`.
+- `btn-primary`, `btn-ghost` and `evidence-block` utilities implement §Components 1 and the inset-evidence surface; use them instead of ad-hoc border/shadow strings.
 - **Rhythm & Grid:** Built on an absolute 4px/8px micro-grid. Spacings of `0.875rem` (14px) and `1.25rem` (20px) are used systematically inside cards to preserve high information density while preventing visual collisions between badge clusters and narrative notes.
 
 ## Elevation & Depth
@@ -260,22 +264,24 @@ The shape hierarchy reflects cut-paper vouchers, physical forms, and perforated 
 
 ### 2. Fact-Check Status Badges (`StampBadge`)
 - Compact, high-visibility badges designed for scanning inline itineraries. The Korean labels below are canonical and mirror `PRD.MD` §3.2 and `stamp-badge.tsx`:
-  - **🎟️ 진짜 입장! (Entry):** Background `#ecfdf5`, border `#10b981`, text `#065f46`, uppercase font with an external link arrow linking to verified venue sources.
-  - **👀 밖에서 찰칵 (Exterior):** Background `#fffbeb`, border `#f59e0b`, text `#92400e`.
-  - **🚌 지나가며 조망 (Window):** Background `#fff7ed`, border `#ea580c`, text `#9a3412`.
-  - **🤖 AI 정밀 판독 (Inference):** Background `#f1f5f9`, border `#94a3b8`, text `#334155`, clickable trigger badge opening the AI forensic reasoning sheet.
+  - **내부 입장 (Entry):** Background `#ecfdf5`, border `#10b981`, text `#065f46`, with an external link arrow linking to the verified source when the venue matches the fact database.
+  - **외부 관람 (Exterior):** Background `#fffbeb`, border `#f59e0b`, text `#92400e`.
+  - **차창 조망 (Window):** Background `#fff7ed`, border `#ea580c`, text `#9a3412`.
+  - **판독 불가(원문에 관람 방식 언급 없음) (Unknown):** Background `#f1f5f9`, dashed border `#94a3b8`, text `#334155`, normal case (the label wraps on mobile). Shown when the source states no viewing method; never forced to Exterior/Entry. It becomes a button only when a Gemini answer exists, opening the reasoning sheet. The badge name is always the result itself; the phrase "AI 정밀 판독" is not used anywhere. Gemini-estimated results keep their mode badge plus a `Gemini 추정(참고용)` basis badge.
 
 ### 3. Inspection Grade Stamp (`GradeStamp`)
 - A circular or octagonal double-bordered medallion tilted at `-4deg` to `-8deg` using CSS transforms.
 - Uses `stamp-gold` (`#b45309`) or `ink-primary` (`#0f172a`) with an intentional rough, distressed rubber stamp border (`border: 3px double #b45309`).
-- Displays the letter grade (`S`, `A+`, `A-`, `B+`, `B-`, `C`) in oversized monospaced figures beneath an `INSPECTED` caption, on a `stamp-gold-bg`-tinted disc. Rendered with a 0.55s stamp-in animation.
+- Displays the letter grade (`S`, `A+`, `A-`, `B+`, `B-`, `C`) in oversized `Space Grotesk` tabular figures beneath an `INSPECTED` mono caption, on a `stamp-gold-bg`-tinted disc. Rendered with a 0.55s stamp-in animation.
 
 ### 4. Itinerary Timeline Card (`DayCard`)
-- Outlined in `#cbd5e1` with a top header strip denoting `DAY 01` (solid `stamp-gold` tab, white text), visited cities, and the day headline.
+- Outlined in `#cbd5e1` with a `paper-tint` top header strip denoting `DAY 01` (solid `stamp-gold` tab, white text), visited cities, and the day headline.
 - Sub-grid contains:
-  - Meal row: `식사 · 조/중/석` summary and the overnight hotel.
-  - Itinerary lines: Prefixed with a source line badge (`📄 L4`), followed by bold destination, matched status badge, and basis/source badge.
+  - Meal row: three mono pills (`조(기내식)`, `중(…)`, `석(…)`) and the overnight hotel in the `paper-tint` footer strip.
+  - Itinerary lines: Prefixed with a time chip and a source line pointer (`L-04`, `label-sm` mono on muted slate), followed by the bold **sight name** (not the description sentence; the original bullet sentence appears beneath as a muted `원문` line), matched status badge, and basis/source badge. The evidence sentence (what the source text says, e.g. `원문에 '(외관)' 표기가 있어 외부 관람으로 판단`) sits in an inset evidence block (3px navy left bar). Verified-source links use the Navy `secondary` token.
   - *Planned, not yet implemented:* a striped transfer indicator with an `alert-crimson` badge when single-day transit exceeds 4 hours.
+  - **Source organization:** raw lines excluded from analysis are regrouped instead of listed. Date/time/flight/duration lines become one flight card (`✈ A 출발 → B 도착 · AY1762 · 소요 3시간 25분` with a `L-04–L-24` range badge); `국가/도시` lines are navy section titles; `…이동 _ 약 N 소요` lines are dashed move rows; `※` and meeting lines collect in a `유의사항·안내` block; the description paragraph is folded behind a ghost `설명 보기` button inside its sight card; unattached intro/notice cards sit behind `소개·안내 카드 N개 보기`; UI residue (`펼치기/접기`, `자세히보기`) is hidden. Anything left over is collected behind a collapsed `정리하지 못한 원문 N줄 보기` button with the reason stated.
+  - **Defaults:** meals and lodging that were not found in the source text show a dashed `원문에 없음 · 기본값` chip; the receipt does the same for the package price.
 
 ### 5. Hidden Cost Receipt (`ReceiptCard`)
 - Emulates a physical thermal receipt with an off-white background, mono font, tabular right-aligned currency, and dashed separator lines.
@@ -289,7 +295,7 @@ The shape hierarchy reflects cut-paper vouchers, physical forms, and perforated 
 
 ### 7. Input Screen (`PackageInput`)
 - A single `rounded-lg` card with a `1.5px` ink border and `shadow-hard`, split into STEP 1 (itinerary textarea), STEP 2 (departure month select), STEP 3 (audit button).
-- Textarea: `paper-canvas` fill, mono text, `1.5px` ink border. A live character counter sits beside a status badge: `정상` (`inspect-official`), `주의` (`inspect-exterior`, tinted bg + `-ink` text), `초과` (`alert-crimson`, white text).
+- Textarea: `paper-canvas` fill, mono text, `1.5px` ink border. A live character counter sits beside a status badge: `정상` (`inspect-official-bg` + `-ink` text), `주의` (`inspect-exterior`, tinted bg + `-ink` text), `초과` (`alert-crimson`, white text).
 - Secondary actions (sample loader, `.txt` upload) use the Secondary / Ghost Stamp style. The Primary Audit Button is full width, `min-h-16`, and disabled (`paper-tint` fill, muted text, no shadow) when input is empty or over the limit.
 - While auditing, a 4px `stamp-gold` scan beam sweeps the button vertically (1.1s loop).
 
@@ -299,20 +305,21 @@ The shape hierarchy reflects cut-paper vouchers, physical forms, and perforated 
 ### 9. Result Tabs
 - Sticky `paper-canvas` bar with a `1.5px` ink top/bottom rule; horizontally scrollable on mobile, `min-h-11` targets.
 - Inactive tab: white fill, `ink/40` border, muted text. **Active tab: `secondary` (`#1e3a8a`) fill, white text, `shadow-hard-sm`.**
+- Each tab is `h-11 min-h-11 shrink-0 whitespace-nowrap` with at least `px-4` (16px) so a label never wraps or touches the border. The tab list overrides the shadcn default `h-8` (`h-auto` plus `py-1.5`) so the 44px targets, the 1.5px borders and the hard shadow are not clipped by the scroll container. Below `lg` the list scrolls horizontally with `pr-4` end padding so the last tab never sits on the screen edge; from `lg` it fits on one row (wraps instead of scrolling if fonts widen it). The active colors are also pinned under `dark:` because the app is light-only and the shadcn dark defaults would otherwise turn the active tab gray in an OS dark mode.
 
 ### 10. Stat Visuals (`RadarChart`, `SegmentBar`/`StatGauge`)
 - Radar: 4 dashed concentric rings at 25/50/75/100% in ink at 40% opacity; score polygon in `alert-crimson` (28% fill, 2.5px stroke); vertex dots in `stamp-gold` with ink outline; 0.7s scale-in. A zero or missing `max` falls back to `1`.
 - Segment gauge: `1.5px` ink-bordered track on `paper-tint`, 20 or 25 discrete segments (default `inspect-official`) that fade in with a 35ms stagger; exposes `role="meter"`. Label row shows the weight as mono `[가중치 N%]`.
 
 ### 11. Journey Track (`JourneyTrack`)
-- City nodes are 44px circles with ink border and hard shadow (`stamp-gold` fill with white text; the final node is ink with paper text). Connectors are dashed ink lines (vertical on mobile, horizontal from `md`) carrying a pill chip with a transport icon (flight / bus / train).
+- City nodes are 44px circles with ink border and hard shadow (`stamp-gold` fill with white text; the final node is ink with paper text). Connectors are dashed ink lines (vertical on mobile, horizontal from `md`) carrying a pill chip with a transport icon (flight / bus / train). From `md`, nodes sit in equal-width grid cells so a long name can never widen a node: names clamp to 2 lines with an ellipsis and the full name in `title`. When there are more than 5 cities the track wraps into balanced rows (e.g. 11 nodes → 4·4·3); at each row break the dashed line turns down, runs back to the left and drops into the first node of the next row, with the transport chip sitting on the horizontal run, so the route stays unbroken. The box never scrolls horizontally (print/PDF safe).
 
 ### 12. Survival Inventory (`InventoryTab`)
-- 2-column grid on mobile, 4 from `md`. Each slot is a `rounded-lg` card with `1.5px` border, `shadow-hard-sm`, a large emoji, a small bold rarity tag, the item name, and two reasons. Rarity is expressed by border and tint:
-  - `일반` common: `ink/50` border on white.
-  - `레어` rare: `inspect-official-border` border, `/10` mint tint.
-  - `에픽` epic: `inspect-ai-border` (slate) border, `/10` slate tint.
-  - `전설` legend: `stamp-gold` border, `/25` gold tint.
+- 2-column grid on mobile, 4 from `md`. Each slot is a `rounded-lg` card with `1.5px` border, `shadow-hard-sm`, a large emoji, a small bold requirement tag (`필수` / `권장` / `있으면 좋음`), the item name, and one basis line in an `evidence-block` (e.g. `하루 평균 3.8곳 방문 → 필수`). Items are sorted 필수 → 권장 → 있으면 좋음. Level is expressed only with existing tokens, fading step by step:
+  - `필수`: `secondary` (Navy Archive) border, `/10` navy tint, solid navy tag with white text.
+  - `권장`: `ink-muted` border on `paper-deep`, outlined slate tag.
+  - `있으면 좋음`: `ledger` border on white, muted outlined tag.
+  The old game-style rarity (일반/레어/에픽/전설) and the gold `legend` treatment are removed.
 - Slots fade up with a 60ms stagger.
 
 ### 13. Action Bar (`ActionBar`)
