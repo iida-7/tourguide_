@@ -260,9 +260,9 @@ function drawFact(result: PackageResult, stack: string, total: number): HTMLCanv
   const count = (m: string) => items.filter((i) => i.mode === m).length
   const tiles = [
     { label: '🎟️ 내부 입장', n: count('entry'), color: C.mint },
-    { label: '🏛️ 외관만', n: count('exterior'), color: C.warn },
-    { label: '🚌 차창 관광', n: count('window'), color: C.window },
-    { label: '🤖 AI 판독', n: count('ai'), color: '#94a3b8' },
+    { label: '👀 외부 관람', n: count('exterior'), color: C.warn },
+    { label: '🚌 차창 조망', n: count('window'), color: C.window },
+    { label: '❔ 판독 불가', n: count('unknown'), color: '#94a3b8' },
   ]
   const tw = (W - 152 - 30) / 2
   tiles.forEach((t, i) => {
@@ -419,7 +419,7 @@ function drawCost(result: PackageResult, stack: string, total: number): HTMLCanv
   if (receipt.mandatoryEstimated) {
     ctx.fillStyle = C.stampInk
     font(ctx, stack, 700, 24)
-    ctx.fillText('※ 필수 경비는 일정표에 금액이 없어 평균값으로 추정했어요', x + 40, 1156)
+    ctx.fillText('※ 일정표에 금액이 없는 경비는 평균 참고값이에요', x + 40, 1156)
   }
   return canvas
 }

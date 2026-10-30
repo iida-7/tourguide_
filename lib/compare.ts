@@ -3,7 +3,7 @@
  * (서버/외부 호출 없음, 100% 브라우저 내 계산)
  */
 
-import type { PackageResult } from './mock-result'
+import { formatEur, type PackageResult } from './mock-result'
 
 export type Side = 'a' | 'b'
 export type Better = 'higher' | 'lower'
@@ -17,7 +17,7 @@ export interface PackageMetrics {
   entry: number
   exterior: number
   window: number
-  ai: number
+  unknown: number
   /** 내부 입장 비율 (0~100) */
   entryRate: number
   /** 일정표에 "버스 약 N시간"으로 명시된 이동 시간 합계 */
@@ -28,7 +28,7 @@ export interface PackageMetrics {
   mandatoryEur: number
   /** 선택관광 전체 합계 (EUR) */
   optionsEur: number
-  /** 필수 경비를 원문에서 직접 읽었는지 (false면 평균 추정값) */
+  /** 필수 경비를 원문에서 직접 읽었는지 (false면 일부가 평균 참고값) */
   costFromText: boolean
   eurToKrw: number
   /** 상품가 + 필수 현지 경비 (원) */
@@ -74,16 +74,16 @@ export function computeMetrics(result: PackageResult): PackageMetrics {
   let entry = 0
   let exterior = 0
   let window = 0
-  let ai = 0
+  let unknown = 0
   for (const d of result.days) {
     for (const it of d.items) {
       if (it.mode === 'entry') entry++
       else if (it.mode === 'exterior') exterior++
       else if (it.mode === 'window') window++
-      else ai++
+      else unknown++
     }
   }
-  const totalItems = Math.max(1, entry + exterior + window + ai)
+  const totalItems = Math.max(1, entry + exterior + window + unknown)
   const { hours, found } = extractBusHours(result)
 
   const { receipt } = result
@@ -102,7 +102,7 @@ export function computeMetrics(result: PackageResult): PackageMetrics {
     entry,
     exterior,
     window,
-    ai,
+    unknown,
     entryRate: Math.round((entry / totalItems) * 100),
     busHours: hours,
     busHoursFound: found,
@@ -149,9 +149,9 @@ export function buildRows(
 
   add('entry', '관람 방식', '내부 입장', ma.entry, mb.entry, 'higher', (n) => `${n}회`)
   add('entryRate', '관람 방식', '내부 입장 비율', ma.entryRate, mb.entryRate, 'higher', (n) => `${n}%`)
-  add('exterior', '관람 방식', '외관 관람', ma.exterior, mb.exterior, 'lower', (n) => `${n}회`)
-  add('window', '관람 방식', '차창 관광', ma.window, mb.window, 'lower', (n) => `${n}회`)
-  add('ai', '관람 방식', 'AI 보조 판독(모호)', ma.ai, mb.ai, 'lower', (n) => `${n}건`)
+  add('exterior', '관람 방식', '외부 관람', ma.exterior, mb.exterior, 'lower', (n) => `${n}회`)
+  add('window', '관람 방식', '차창 조망', ma.window, mb.window, 'lower', (n) => `${n}회`)
+  add('unknown', '관람 방식', '판독 불가(관람 방식 불명)', ma.unknown, mb.unknown, 'lower', (n) => `${n}건`)
 
   const busComparable = ma.busHoursFound > 0 || mb.busHoursFound > 0
   add('bus', '이동·동선', '버스 이동 시간(명시 기준)', ma.busHours, mb.busHours, busComparable ? 'lower' : null, (n) => `${n}시간`)
@@ -160,8 +160,8 @@ export function buildRows(
   add('days', '이동·동선', '여행 일수', ma.days, mb.days, null, (n) => `${n}일`)
 
   add('price', '비용', '상품가', ma.packagePriceKrw, mb.packagePriceKrw, 'lower', won)
-  add('mandatory', '비용', '필수 현지 경비', ma.mandatoryEur, mb.mandatoryEur, 'lower', (n) => `€${n}`)
-  add('options', '비용', '선택관광 합계', ma.optionsEur, mb.optionsEur, 'lower', (n) => `€${n}`)
+  add('mandatory', '비용', '필수 현지 경비', ma.mandatoryEur, mb.mandatoryEur, 'lower', (n) => formatEur(n))
+  add('options', '비용', '선택관광 합계', ma.optionsEur, mb.optionsEur, 'lower', (n) => formatEur(n))
   add('real', '비용', '예상 실지출 (상품가+필수경비)', ma.realCostKrw, mb.realCostKrw, 'lower', won)
   add('perDay', '비용', '1일당 실지출', ma.costPerDay, mb.costPerDay, 'lower', won)
   if (ma.costPerEntry !== null && mb.costPerEntry !== null) {
@@ -253,7 +253,7 @@ export function compareToMarkdown(
     out.push(`| ${r.label} | ${r.aText}${mark(r, 'a')} | ${r.bText}${mark(r, 'b')} |`)
   }
   if (!ma.costFromText || !mb.costFromText) {
-    out.push('', '> ※ 일정표에서 필수 현지 경비를 읽지 못한 상품은 평균 추정값(€150)으로 비용을 계산했습니다.')
+    out.push('', '> ※ 일정표에 필수 현지 경비 금액이 없는 항목은 유럽 패키지 평균 참고값으로 비용을 계산했습니다.')
   }
   out.push('', '> 본 비교는 일정표 원문 기반 룰 엔진 결과이며 참고용입니다.')
   return out.join('\n')
