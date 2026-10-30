@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import type { PackageResult } from '@/lib/mock-result'
+import { RESULT_KEY, clearResultCache, purgeLegacyCache } from '@/lib/session-cache'
 import { ActionBar } from './action-bar'
 import { InventoryTab } from './inventory-tab'
 import { OverviewTab } from './overview-tab'
@@ -27,7 +28,8 @@ export function ResultView({ result: initialResult }: { result: PackageResult })
 
   useEffect(() => {
     try {
-      const saved = sessionStorage.getItem('inspected_result')
+      purgeLegacyCache()
+      const saved = sessionStorage.getItem(RESULT_KEY)
       if (saved) {
         const parsed = JSON.parse(saved) as PackageResult
         if (parsed && parsed.stats && parsed.days) {
@@ -41,9 +43,7 @@ export function ResultView({ result: initialResult }: { result: PackageResult })
   }, [])
 
   const resetToSample = () => {
-    sessionStorage.removeItem('inspected_result')
-    sessionStorage.removeItem('inspected_raw_text')
-    sessionStorage.removeItem('inspected_month')
+    clearResultCache()
     setResult(initialResult)
     setIsCustom(false)
   }
@@ -53,7 +53,7 @@ export function ResultView({ result: initialResult }: { result: PackageResult })
       <div className="print-hidden flex flex-wrap items-center justify-between gap-3">
         <Link
           href="/"
-          className="flex min-h-11 items-center gap-1.5 rounded-md text-sm font-bold underline-offset-4 hover:underline"
+          className="btn-ghost flex min-h-11 items-center gap-1.5 px-3 text-body-sm"
         >
           <ArrowLeft className="size-4" aria-hidden="true" />
           다른 일정 감정하기
@@ -61,14 +61,14 @@ export function ResultView({ result: initialResult }: { result: PackageResult })
 
         {isCustom && (
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1 rounded-full border border-mint bg-mint/10 px-3 py-1 font-mono text-xs font-bold text-mint-ink">
+            <span className="inline-flex items-center gap-1 rounded border border-mint bg-mint-bg px-3 py-1 font-mono text-label-md text-mint-ink">
               <CheckCircle2 className="size-3.5" aria-hidden="true" />
               직접 입력한 일정 감정 완료
             </span>
             <button
               type="button"
               onClick={resetToSample}
-              className="inline-flex items-center gap-1 rounded border border-ink/40 bg-card px-2.5 py-1 text-xs font-bold text-muted-foreground hover:text-ink"
+              className="btn-ghost inline-flex min-h-11 items-center gap-1 px-2.5 text-label-md"
             >
               <RotateCcw className="size-3" aria-hidden="true" />
               기본 예시 보기
@@ -77,41 +77,50 @@ export function ResultView({ result: initialResult }: { result: PackageResult })
         )}
       </div>
 
-      <VerdictHeader result={result} />
+      {/* DESIGN.md §Layout: single column on mobile, split-column dashboard from lg (verdict rail + analysis tabs). */}
+      <div className="grid gap-6 lg:grid-cols-[360px_minmax(0,1fr)] lg:items-start lg:gap-8">
+        <aside aria-label="종합 판정" className="lg:sticky lg:top-4 lg:max-h-[calc(100dvh-2rem)] lg:overflow-y-auto lg:pr-1">
+          <VerdictHeader result={result} />
+        </aside>
 
-      <Tabs defaultValue="overview" className="gap-5">
-        <div className="print-hidden sticky top-0 z-30 -mx-4 border-y-[1.5px] border-ink bg-paper px-4 py-2 md:-mx-6 md:px-6">
-          <TabsList className="no-scrollbar h-auto w-full justify-start gap-2 overflow-x-auto rounded-none bg-transparent p-0">
-            {tabs.map((t) => (
-              <TabsTrigger
-                key={t.value}
-                value={t.value}
-                className="h-11 flex-none rounded-md border-[1.5px] border-ink/40 bg-card px-4 text-sm font-bold text-ink/70 hover:text-ink data-active:border-ink data-active:bg-navy data-active:text-white data-active:shadow-hard-sm"
-              >
-                {t.label}
-              </TabsTrigger>
-            ))}
-          </TabsList>
+        <div className="min-w-0 space-y-6">
+          <Tabs defaultValue="overview" className="gap-5">
+            <div className="print-hidden sticky top-0 z-30 -mx-4 border-y-[1.5px] border-ink bg-paper px-4 py-1 md:-mx-6 md:px-6 lg:top-4 lg:mx-0 lg:rounded lg:border-[1.5px] lg:px-1">
+              {/* TabsList 기본 h-8(32px)이 44px 탭의 위아래와 그림자를 잘라 내므로 높이를 자동으로 풀고, 상하 여백(py-1.5)으로 그림자·포커스 링 자리를 둔다.
+                  좁은 화면은 가로 스크롤이며 끝에 pr-4 여백을 둬 마지막 탭이 가장자리에 붙지 않는다. lg 이상은 줄바꿈으로 스크롤 없이 모두 보여 준다. */}
+              <TabsList className="no-scrollbar group-data-horizontal/tabs:h-auto w-full justify-start gap-2 overflow-x-auto rounded-none bg-transparent py-1.5 pr-4 pl-0.5 lg:flex-wrap lg:gap-1 lg:overflow-visible lg:pr-0.5">
+                {tabs.map((t) => (
+                  <TabsTrigger
+                    key={t.value}
+                    value={t.value}
+                    className="h-11 min-h-11 shrink-0 flex-none rounded border-[1.5px] border-ledger bg-card px-4 font-mono text-label-lg whitespace-nowrap text-ink-secondary hover:border-ink hover:text-ink data-active:border-navy data-active:bg-navy data-active:text-white data-active:shadow-hard-sm! dark:text-ink-secondary dark:hover:text-ink dark:data-active:border-navy dark:data-active:bg-navy dark:data-active:text-white"
+                  >
+                    {t.label}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </div>
+
+            <TabsContent value="overview">
+              <OverviewTab result={result} />
+            </TabsContent>
+            <TabsContent value="schedule">
+              <ScheduleTab days={result.days} />
+            </TabsContent>
+            <TabsContent value="receipt">
+              <ReceiptTab result={result} />
+            </TabsContent>
+            <TabsContent value="valuation">
+              <ValuationTab result={result} />
+            </TabsContent>
+            <TabsContent value="inventory">
+              <InventoryTab items={result.inventory} />
+            </TabsContent>
+          </Tabs>
+
+          <ActionBar result={result} />
         </div>
-
-        <TabsContent value="overview">
-          <OverviewTab result={result} />
-        </TabsContent>
-        <TabsContent value="schedule">
-          <ScheduleTab days={result.days} />
-        </TabsContent>
-        <TabsContent value="receipt">
-          <ReceiptTab result={result} />
-        </TabsContent>
-        <TabsContent value="valuation">
-          <ValuationTab result={result} />
-        </TabsContent>
-        <TabsContent value="inventory">
-          <InventoryTab items={result.inventory} />
-        </TabsContent>
-      </Tabs>
-
-      <ActionBar result={result} />
+      </div>
     </div>
   )
 }
