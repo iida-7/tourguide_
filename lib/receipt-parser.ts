@@ -21,6 +21,8 @@ export interface ParsedReceipt {
     optionCards: number
     /** 선택관광 카드는 있는데 금액 줄을 못 찾은 수 */
     optionCardsWithoutAmount: number
+    /** 선택관광인데 금액이 적혀 있지 않은 항목 (이름 + 원문 줄) */
+    unpricedOptions: { label: string; line: number }[]
   }
 }
 
@@ -92,6 +94,9 @@ const KRW_ITEM_MAX = 1_000_000
  */
 const CARD_MARKER = /^\[?\s*선택\s*관광\s*\]?$/
 const CARD_SCAN_AHEAD = 14
+/** "명소명 [선택관광]" 한 줄 형식 */
+const TAGGED_OPTION = /^(.*\S)\s*\[\s*선택\s*관광\s*\]\s*$/
+const TAGGED_SCAN_AHEAD = 4
 
 interface CardOption {
   title: string
@@ -101,8 +106,9 @@ interface CardOption {
   tag: OptionLine['tag']
 }
 
-function parseOptionCards(rawLines: string[]): { cards: CardOption[]; withoutAmount: number } {
+function parseOptionCards(rawLines: string[]): { cards: CardOption[]; withoutAmount: number; unpriced: { label: string; line: number }[] } {
   const out: CardOption[] = []
+  const unpriced: { label: string; line: number }[] = []
   let withoutAmount = 0
   rawLines.forEach((raw, i) => {
     if (!CARD_MARKER.test(raw.trim())) return
@@ -127,9 +133,31 @@ function parseOptionCards(rawLines: string[]): { cards: CardOption[]; withoutAmo
         break
       }
     }
-    if (!found) withoutAmount++
+    if (!found) {
+      withoutAmount++
+      unpriced.push({ label: title.length > 42 ? `${title.slice(0, 41)}…` : title, line: titleIdx + 1 })
+    }
   })
-  return { cards: out, withoutAmount }
+
+  // 제목 줄에 "[선택관광]" 태그가 붙은 형식(모두투어): "빛의 채석장 [선택관광]". 아래 몇 줄에 금액이 없으면 금액 미표기 항목으로 남긴다.
+  rawLines.forEach((raw, i) => {
+    const m = raw.trim().match(TAGGED_OPTION)
+    if (!m) return
+    const title = m[1].replace(/^[-•·]\s*/, '').trim()
+    for (let j = i + 1; j < Math.min(rawLines.length, i + 1 + TAGGED_SCAN_AHEAD); j++) {
+      const t = rawLines[j].trim()
+      if (!t) continue
+      if (DAY_HEADER.test(t) || TAGGED_OPTION.test(t)) break
+      const amt = pickAmount(t)
+      if (amt && !(amt.currency === 'KRW' && amt.amount > KRW_ITEM_MAX)) {
+        out.push({ title, titleLine: i + 1, amtLine: j + 1, amount: amt, tag: optionTag(title) })
+        return
+      }
+    }
+    withoutAmount++
+    unpriced.push({ label: title, line: i + 1 })
+  })
+  return { cards: out, withoutAmount, unpriced }
 }
 
 export function parseReceipt(raw: string): ParsedReceipt {
@@ -143,15 +171,17 @@ export function parseReceipt(raw: string): ParsedReceipt {
     skippedLargeKrw: 0,
     optionCards: 0,
     optionCardsWithoutAmount: 0,
+    unpricedOptions: [],
   }
   let section: 'none' | 'mandatory' | 'options' = 'none'
 
   const rawLines = raw.split(/\r?\n/)
   // 웹페이지형 선택관광 카드(제목 / 선택관광 / 요금 / 성인 : 60유로)는 카드 단위로 먼저 읽고,
   // 그 금액 줄은 아래 일반 규칙에서 건너뛴다
-  const { cards, withoutAmount } = parseOptionCards(rawLines)
+  const { cards, withoutAmount, unpriced } = parseOptionCards(rawLines)
   diagnostics.optionCards = cards.length
   diagnostics.optionCardsWithoutAmount = withoutAmount
+  diagnostics.unpricedOptions = unpriced
   const consumed = new Set(cards.map((c) => c.amtLine))
 
   rawLines.forEach((rawLine, idx) => {
@@ -245,7 +275,7 @@ interface MandatoryCategory {
 }
 
 const MANDATORY_CATEGORIES: MandatoryCategory[] = [
-  { id: 'guide', label: '가이드 경비', match: /가이드|기사/, avgEur: 100, prefer: /경비|비용|팁|동행|지불/ },
+  { id: 'guide', label: '가이드 경비', match: /가이드|기사\s*(?:경비|비용|팁|님)|기사\/가이드/, avgEur: 100, prefer: /경비|비용|팁|동행|지불/ },
   { id: 'citytax', label: '유럽 도시세', match: /도시세|City\s*Tax|관광세/i, avgEur: 35, prefer: /세/ },
   { id: 'tip', label: '식당 매너팁·생수', match: /팁|매너|생수/, avgEur: 15, prefer: /팁|매너/ },
 ]

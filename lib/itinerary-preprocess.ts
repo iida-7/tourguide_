@@ -120,14 +120,15 @@ const LANDMARK_NOUNS = /박물관|미술관|궁전|성당|대성당|성곽|고�
 
 /** 안에 들어가거나(내부) 입장권이 명시된 표현 */
 const INSIDE_STRONG = /내부|입장(?!\s*료\s*불포함)|입장권|투어\s*포함|티켓\s*포함/
-const EXTERIOR_WORDS = /외관|전경|포토\s*타임|밖에서|앞에서|바라보|조망|감상|사진\s*촬영/
+const EXTERIOR_WORDS = /외부\s*관람|외관|전경|포토\s*타임|밖에서|앞에서|바라보|조망|감상|사진\s*촬영/
 const WINDOW_EXPLICIT = /차창|차안|차\s*안에서/
 const WINDOW_PASSING = /지나가(?:며|면서|는)?/
 const WINDOW_TOUR = /(?:버스|열차|기차)\s*(?:시내\s*)?(?:관광|투어)|패노라마|파노라마/
 
 /** 괄호/대괄호 태그: 원문이 직접 밝힌 관람 방식이므로 키워드 추정보다 우선한다 — "콜로세움(외관)", "바티칸박물관(내부)", "[차창]" */
 const TAG_BODY = String.raw`[^)\]）]*`
-const TAG_EXTERIOR = new RegExp(String.raw`[(\[（]\s*(?:외관|전경|조망|포토\s*타임)${TAG_BODY}[)\]）]`)
+// "[외부관람]"처럼 '관람'이 들어 있어도 내부 입장으로 새지 않도록 외부 관람 태그를 명시한다
+const TAG_EXTERIOR = new RegExp(String.raw`[(\[（]\s*(?:외부\s*관람|외부\s*관광|외관|전경|조망|포토\s*타임)${TAG_BODY}[)\]）]`)
 const TAG_ENTRY = new RegExp(String.raw`[(\[（]\s*(?:내부(?:\s*관람)?|입장)${TAG_BODY}[)\]）]`)
 const TAG_WINDOW = new RegExp(String.raw`[(\[（]\s*차창${TAG_BODY}[)\]）]`)
 

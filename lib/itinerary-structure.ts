@@ -13,6 +13,8 @@ import type { OptionInfo } from './mock-result'
 export interface BlockLine {
   lineNum: number
   text: string
+  /** 이 줄 바로 앞의 연속 빈 줄 수 (블록 경계 판단용. 모두투어 형식은 빈 줄 2개 이상 = 블록 경계) */
+  blankBefore?: number
 }
 
 export interface CityLine {
@@ -34,7 +36,7 @@ export interface CardDraft {
   option: boolean
 }
 
-export type SightKind = 'bullet' | 'generic' | 'option' | 'promoted'
+export type SightKind = 'bullet' | 'generic' | 'option' | 'promoted' | 'block'
 
 export interface SightDraft {
   kind: SightKind
@@ -44,6 +46,10 @@ export interface SightDraft {
   /** 카드가 본문 매칭이 아니라 "구간에 불릿이 하나뿐"이라는 이유로 붙은 경우 (이름을 카드 제목에서 가져온다) */
   cardByPosition?: boolean
   option?: OptionInfo
+  /** 블록 형식(모두투어): 제목 줄 아래의 소개·개요 줄. 판독 근거로 쓰지 않고 설명으로만 접는다 */
+  blockDesc?: BlockLine[]
+  /** 블록 형식: 제목 줄에 [선택관광] 태그가 있음 */
+  isOption?: boolean
 }
 
 export interface FlightDraft {
@@ -54,6 +60,8 @@ export interface FlightDraft {
   arrTime?: string
   arrDate?: string
   flightNo?: string
+  /** 편명 대신 항공사 이름만 적힌 원문 ("대한항공") */
+  airline?: string
   duration?: string
   lines: number[]
 }
@@ -92,6 +100,12 @@ export interface StructuredDay {
   /** 방문지(불릿)가 있는 도시 구간들 (여정 트랙용) */
   sightCities: CityLine[]
   cardLayout: boolean
+  /** 블록 형식: 일차 헤더 도시 줄 원문 ("모나코 → 에즈") */
+  headerText?: string
+  /** 식사 줄에 이상이 있으면 그 설명 (예: 같은 끼니가 두 번 적힘) */
+  mealsNote?: string
+  /** 숙박이 "미정" 안내로 적혀 있음 */
+  lodgingTbd?: boolean
 }
 
 // "스위스/루체른", "이탈리아/노벤타 디 피아베 디자이너 아울렛", "대한민국/인천"
@@ -119,7 +133,7 @@ const TIME_LINE = /^\d{1,2}:\d{2}$/
 const DATE_LINE = /^\d{4}\s*[-./]\s*\d{1,2}\s*[-./]\s*\d{1,2}\s*(?:\(?\s*[월화수목금토일](?:요일)?\s*\)?)?$/
 const AIRPORT_EVENT = /^(.+?)\(([A-Z]{3})\)\s*(출발|도착)$/
 const FLIGHT_NO = /^[A-Z][A-Z0-9]\d{2,4}$/
-const DURATION_LINE = /^(\d{1,2})\s*시간\s*(\d{1,2})?\s*분?$/
+const DURATION_LINE = /^(\d{1,2})\s*시간\s*(\d{1,2})?\s*분?(?:\s*소요)?$/
 const TRANSPORT_HEAD = /^\[\s*교통편\s*:\s*([A-Z0-9]+)\s*\]$/
 const TRANSPORT_FIELD = /^(편명|출발도시|도착도시|이동시간)\s*:\s*(.*)$/
 
@@ -150,6 +164,7 @@ function extractFlights(lines: BlockLine[], codes: Record<string, string>) {
   const flights: FlightDraft[] = []
   let date: BlockLine | undefined
   let open: FlightDraft | undefined
+  let fmt2Open = false
   const nameOf = (code: string) => (codes[code] ? `${codes[code]}(${code})` : code)
 
   // 이벤트: 시각 / 날짜 / 공항(출발|도착) 세 줄
@@ -176,6 +191,60 @@ function extractFlights(lines: BlockLine[], codes: Record<string, string>) {
       }
       i += 2
       continue
+    }
+
+    // 모두투어 형식: "인천 (ICN) 출발 / 2026.11.02(월) / 12:15" (공항 → 날짜 → 시각, 도착일이 다르면 "+1일"이 시각 앞에 옴)
+    if (AIRPORT_EVENT.test(t) && lines[i + 1] && DATE_LINE.test(lines[i + 1].text.trim())) {
+      const n2 = lines[i + 2]?.text.trim() ?? ''
+      const dayShift = /^\+\d+\s*일$/.test(n2) ? n2 : ''
+      const timeLine = dayShift ? lines[i + 3] : lines[i + 2]
+      if (timeLine && TIME_LINE.test(timeLine.text.trim())) {
+        const ev = t.match(AIRPORT_EVENT)!
+        const place = `${ev[1].trim()}(${ev[2]})`
+        const time = dayShift ? `${timeLine.text.trim()} (${dayShift})` : timeLine.text.trim()
+        const dateText = shortDate(lines[i + 1].text.trim())
+        const span = dayShift ? 4 : 3
+        const nums = lines.slice(i, i + span).map((l) => l.lineNum)
+        nums.forEach((n) => consumed.add(n))
+        if (ev[3] === '출발') {
+          open = { from: place, depTime: time, depDate: dateText, lines: [...nums] }
+          fmt2Open = true
+          flights.push(open)
+        } else if (open && !open.to) {
+          open.to = place
+          open.arrTime = time
+          open.arrDate = dateText
+          open.lines.push(...nums)
+          open = undefined
+          fmt2Open = false
+        } else {
+          flights.push({ to: place, arrTime: time, arrDate: dateText, lines: [...nums] })
+        }
+        i += span - 1
+        continue
+      }
+    }
+
+    // 모두투어 형식의 항공 블록 안: 로고(UI)·항공사 이름·"N시간 M분 소요" 줄
+    if (open && fmt2Open) {
+      if (/^logo[-_]/i.test(t)) {
+        open.lines.push(lines[i].lineNum)
+        consumed.add(lines[i].lineNum)
+        continue
+      }
+      if (DURATION_LINE.test(t) && !open.duration) {
+        const m = t.match(DURATION_LINE)!
+        open.duration = durationText(m[1], m[2])
+        open.lines.push(lines[i].lineNum)
+        consumed.add(lines[i].lineNum)
+        continue
+      }
+      if (!open.airline && /^[가-힣A-Za-z ]{2,14}$/.test(t) && !AIRPORT_EVENT.test(t)) {
+        open.airline = t
+        open.lines.push(lines[i].lineNum)
+        consumed.add(lines[i].lineNum)
+        continue
+      }
     }
 
     // 편명·소요시간 줄은 열린 항공편(출발만 읽은 상태)에 붙는다
@@ -563,6 +632,228 @@ export function structureDay(lines: BlockLine[], sightKeys: string[], codes: Rec
       ? out.sightCities.reduce((best, c) => (c.bullets > best.bullets ? c : best), out.sightCities[0])
       : out.cities[out.cities.length - 1]
 
+  return out
+}
+
+// ──────────────────────────────────────────────────────────────
+// 블록 형식 (모두투어 등): 빈 줄 2개 이상이 명소 블록의 경계
+//   N일차 / 2026/11/03(화) / 모나코 → 에즈 / (일차 소개 [약3시간30분 이동소요]) /
+//   명소명 [외부관람] / 한 줄 소개 / 개요 : … / (빈 줄 ×4) / 다음 명소 …
+//   … [예정호텔 - ★★★★ 4성급 일급호텔] / 식사 / 조식 - X, 중식 - Y, 석식 - Z
+// ──────────────────────────────────────────────────────────────
+
+const SLASH_DATE = /^\d{4}\s*\/\s*\d{1,2}\s*\/\s*\d{1,2}\s*(?:\(\s*[월화수목금토일](?:요일)?\s*\))?$/
+const ARROW = /\s*(?:→|⇒|➔|->)\s*/
+const MEAL_PAIR = /(조식|중식|석식)\s*-\s*([^,]+?)\s*(?=,|$)/g
+const HOTEL_BRACKET = /^\[\s*예정\s*호텔\s*(?:-\s*)?(.*?)\s*\]$/
+const HOTEL_TBD = /숙박\s*장소가\s*미정/
+/** 일차 소개/명소 블록 앞에 붙는 이동 안내: "… [약3시간30분 이동소요]" */
+const MOVE_BRACKET = /\[\s*(약[^\]]*?)\s*이동\s*소요\s*\]/
+/** 하루를 마치는 이동 줄: "니스 근교호텔로 이동하여 휴식", "밀라노 공항으로 이동하여 출국준비" */
+const CLOSING_MOVE = /(?:호텔|공항)(?:으로|로)\s*(?:이동|복귀)|이동하여\s*(?:휴식|출국)|복귀하여\s*휴식/
+const DISCLAIMER = /변경될\s*수\s*있|유동적/
+const EMPTY_FIELD = /^[가-힣 ]{2,8}\s*[:：]\s*$/
+const BLOCK_TAG_OPTION = /\[\s*선택\s*관광\s*\]/
+const BLOCK_TAG_ANY = /\[[^\]]*\]/g
+const TAG_PAREN = /\(\s*(?:외관|전경|조망|내부|입장|차창|포토\s*타임)[^)]*\)/g
+
+/** 블록 형식 원문인지 자동 감지: `YYYY/MM/DD(요일)` 날짜 줄이 있고 카드 형식(자세히보기)은 없다 */
+export function detectBlockFormat(rawLines: string[]): boolean {
+  const t = rawLines.map((l) => l.trim())
+  return t.some((l) => SLASH_DATE.test(l)) && !t.some((l) => MORE_LINK.test(l))
+}
+
+/** 제목 줄에서 [외부관람]/[선택관광] 같은 태그를 떼어 명소 이름만 남긴다 */
+export function stripBlockTags(title: string): string {
+  return title.replace(BLOCK_TAG_ANY, ' ').replace(TAG_PAREN, ' ').replace(/\s+/g, ' ').trim()
+}
+
+/** 명소 이름처럼 보이는 줄인가: 짧고, 문장(…다.)이나 "항목 : 값" 형식이 아니다 */
+function isTitleLike(t: string): boolean {
+  if (t.length > 40) return false
+  if (/[.!?。]$/.test(t) || /(?:니다|입니다|합니다)\.?$/.test(t)) return false
+  if (/^개요\s*[:：]/.test(t) || /\S\s[:：]\s*\S/.test(t)) return false
+  return true
+}
+
+/** "약3시간30분" → "약 3시간 30분" */
+function prettyDuration(raw: string): string {
+  return raw
+    .replace(/\s+/g, '')
+    .replace(/^약/, '약 ')
+    .replace(/(\d+)시간/, '$1시간 ')
+    .trim()
+}
+
+export function structureBlockDay(lines: BlockLine[], sightKeys: string[], codes: Record<string, string> = {}): StructuredDay {
+  void sightKeys
+  const out: StructuredDay = {
+    flights: [],
+    sections: [],
+    notices: [],
+    infoCards: [],
+    hidden: [],
+    leftover: [],
+    mealLines: [],
+    lodgingLines: [],
+    cities: [],
+    sightCities: [],
+    cardLayout: false,
+  }
+
+  // 1) 항공 이동 카드와 일차 날짜
+  const { consumed, flights, date } = extractFlights(lines, codes)
+  out.flights = flights
+  out.date = date
+
+  // 2) 날짜 다음 줄 = 일차 도시 줄 ("모나코 → 에즈" / "밀라노" / "인천")
+  const rest = lines.filter((l) => !consumed.has(l.lineNum))
+  let cityLine: BlockLine | undefined
+  const first = rest[0]
+  if (first && (date || ARROW.test(first.text)) && isTitleLike(first.text.trim()) && !/^식사$|^\[/.test(first.text.trim()) && (ARROW.test(first.text.trim()) || /^[가-힣A-Za-z][가-힣A-Za-z ·\-]{0,20}$/.test(first.text.trim()))) {
+    cityLine = first
+  }
+  const sec: SectionDraft = { moves: [], intro: [], sights: [] }
+  const cityNames = cityLine ? cityLine.text.trim().split(ARROW).map((c) => c.trim()).filter(Boolean) : []
+  if (cityLine) {
+    out.headerText = cityNames.join(' → ')
+    // 출발일(첫 도시가 인천)에는 도착 도시도 "머문 도시"가 아니라 이동 도착지이므로 여정 도시로 세지 않는다
+    const departureDay = cityNames[0] === '인천' && flights.length > 0
+    out.cities = cityNames.map((c) => ({ country: '', city: c, line: cityLine!.lineNum, bullets: c === '인천' || departureDay ? 0 : 1 }))
+    sec.city = { country: '', city: out.headerText, line: cityLine.lineNum, bullets: 0 }
+  }
+  out.sections.push(sec)
+
+  // 3) 줄 분류: 식사/호텔/UI/안내/마무리 이동은 따로 빼고, 나머지는 빈 줄 간격으로 블록을 나눈다
+  const mealParts = new Map<string, string>()
+  const dupMeals: string[] = []
+  let tier: string | undefined
+  let hotelName: string | undefined
+  const content: { l: BlockLine; gap: number }[] = []
+  let gap = 0
+
+  const note = (l: BlockLine, kind: NoticeDraft['kind']) => out.notices.push({ ...l, kind })
+
+  for (let i = 0; i < rest.length; i++) {
+    const l = rest[i]
+    if (l === cityLine) continue
+    const t = l.text.trim()
+    gap += l.blankBefore ?? 0
+
+    // UI 잔여물·빈 항목: 화면에서 숨기고, 블록 경계(빈 줄 수)는 그대로 이어서 센다
+    if (isUiResidue(t) || /^logo[-_]/i.test(t) || EMPTY_FIELD.test(t)) {
+      out.hidden.push(l)
+      continue
+    }
+
+    if (t === '식사') {
+      out.mealLines.push(l)
+      const next = rest[i + 1]
+      if (next && /(조식|중식|석식)\s*-/.test(next.text)) {
+        out.mealLines.push(next)
+        for (const m of next.text.matchAll(MEAL_PAIR)) {
+          const key = m[1]
+          const val = m[2].trim()
+          if (mealParts.has(key)) dupMeals.push(`${key} "${mealParts.get(key)}" / "${val}"`)
+          else mealParts.set(key, val)
+        }
+        i++
+      }
+      continue
+    }
+
+    const hb = t.match(HOTEL_BRACKET)
+    if (hb) {
+      out.lodgingLines.push(l)
+      tier = hb[1].replace(/^예정\s*호텔\s*-?\s*/, '').trim() || undefined
+      // 뒤따르는 "예정호텔" 라벨 줄, 그다음 숙소명 또는 "숙박 장소가 미정" 안내
+      let j = i + 1
+      if (rest[j]?.text.trim() === '예정호텔') {
+        out.lodgingLines.push(rest[j])
+        j++
+      }
+      const nx = rest[j]?.text.trim()
+      if (nx && HOTEL_TBD.test(nx)) {
+        out.lodgingLines.push(rest[j])
+        out.lodgingTbd = true
+        j++
+      } else if (nx && nx !== '식사' && !/^\[/.test(nx) && (rest[j].blankBefore ?? 0) === 0 && isTitleLike(nx)) {
+        out.lodgingLines.push(rest[j])
+        hotelName = nx
+        j++
+      }
+      i = j - 1
+      continue
+    }
+
+    // 안내·미팅·마무리 이동 줄은 블록의 첫 줄일 때만 인정한다 (설명 문단 속 문장을 빼앗지 않기 위해)
+    const blockStart = content.length === 0 || gap >= 2
+    if (/^※/.test(t) || (blockStart && DISCLAIMER.test(t))) {
+      note(l, 'notice')
+      continue
+    }
+    if (blockStart && OPS_LINE.test(t)) {
+      note(l, 'meeting')
+      continue
+    }
+    if (blockStart && CLOSING_MOVE.test(t)) {
+      sec.moves.push({ line: l })
+      gap = 0
+      continue
+    }
+
+    content.push({ l, gap })
+    gap = 0
+  }
+
+  // 4) 식사/숙박 값 정리
+  if (mealParts.size > 0) {
+    out.meals = ['조식', '중식', '석식']
+      .filter((k) => mealParts.has(k))
+      .map((k) => `${k} : ${mealParts.get(k)}`)
+      .join(' / ')
+  }
+  if (dupMeals.length > 0) out.mealsNote = `원문 이상: 같은 끼니가 중복으로 적혀 있어 앞값을 사용했어요 (${dupMeals.join(', ')})`
+  if (tier || hotelName || out.lodgingTbd) {
+    const tail = tier ? ` · ${tier} 예정` : ''
+    out.lodging = out.lodgingTbd ? `호텔 미정 (출발 1일 전 확정)${tail}` : `${hotelName ?? '예정호텔'}${tail}`
+  }
+
+  // 5) 블록 나누기: 앞 줄과의 빈 줄이 2개 이상이면 새 블록
+  const blocks: BlockLine[][] = []
+  content.forEach((c, idx) => {
+    if (idx === 0 || c.gap >= 2) blocks.push([c.l])
+    else blocks[blocks.length - 1].push(c.l)
+  })
+
+  blocks.forEach((blk, bi) => {
+    let k = 0
+    // 이동 안내 줄 ("… [약30분 이동소요]")은 명소가 아니라 이동 줄
+    while (k < blk.length && MOVE_BRACKET.test(blk[k].text)) {
+      const m = blk[k].text.match(MOVE_BRACKET)!
+      sec.moves.push({ line: blk[k], duration: prettyDuration(m[1]) })
+      k++
+    }
+    // 일차의 첫 블록 첫 줄은 그날의 소개 문구
+    if (bi === 0 && k === 0 && blk.length > 0) {
+      sec.intro.push(blk[0])
+      k = 1
+    }
+    if (k >= blk.length) return
+    const title = blk[k]
+    const tt = title.text.trim()
+    if (!isTitleLike(tt)) {
+      // 명소 이름으로 보이지 않는 줄: 소개 문구로 두되, 첫 블록이 아니면 정리하지 못한 줄로 보고한다
+      blk.slice(k).forEach((l) => (bi === 0 ? sec.intro.push(l) : out.leftover.push(l)))
+      return
+    }
+    const option = BLOCK_TAG_OPTION.test(tt)
+    sec.sights.push({ kind: 'block', line: title, blockDesc: blk.slice(k + 1), isOption: option, option: option ? {} : undefined })
+  })
+
+  // 6) 대표 도시 / 여정 도시
+  out.sightCities = out.cities.filter((c) => c.bullets > 0)
+  out.mainCity = out.sightCities[0] ?? out.cities.find((c) => c.city !== '인천') ?? out.cities[0]
   return out
 }
 

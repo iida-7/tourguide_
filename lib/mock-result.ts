@@ -67,6 +67,10 @@ export interface ScheduleItem {
   aiReason?: AiReason
   /** 이 명소에 접어 넣은 설명 문단 (원문 줄 번호 유지) */
   desc?: SourceLine[]
+  /** Gemini에 물을 때 보낼 문장 (명소 이름/제목 줄). 설명 문단은 보내지 않는다 */
+  aiText?: string
+  /** 도시·지역 이름뿐인 제목처럼 Gemini에 물어도 의미가 없는 항목 */
+  aiSkip?: boolean
   /** desc의 첫 줄이 설명 카드 제목이면 true (화면에서 소제목으로 보여 준다) */
   descHasTitle?: boolean
   /** 선택관광 카드 */
@@ -100,6 +104,8 @@ export interface FlightCard {
   arrTime?: string
   arrDate?: string
   flightNo?: string
+  /** 편명 대신 항공사 이름만 적힌 원문 ("대한항공") */
+  airline?: string
   duration?: string
   lines: number[]
 }
@@ -136,6 +142,10 @@ export interface DaySchedule {
   leftover?: SourceLine[]
   /** 식사·숙박으로 읽은 원문 줄 (줄 번호 표시용) */
   mealLines?: SourceLine[]
+  /** 식사 줄에 원문 이상이 있을 때의 설명 (같은 끼니 중복 등) */
+  mealsNote?: string
+  /** 숙박이 "미정"이라고 원문에 적혀 있음 (기본값이 아니라 원문 표기) */
+  lodgingTbd?: boolean
   lodgingLines?: SourceLine[]
   meals: string
   lodging: string
@@ -206,6 +216,8 @@ export interface PackageResult {
     mandatoryEstimated?: boolean
     /** 금액 없이 이름만 나온 선택관광 수 */
     optionsWithoutAmount?: number
+    /** 금액이 적혀 있지 않은 선택관광 (항목은 보여 주되 합계에는 넣지 않는다) */
+    unpricedOptions?: { label: string; line: number }[]
     /** 원문에서 상품가를 찾지 못해 기본값을 쓴 경우 true */
     packagePriceEstimated?: boolean
   }
