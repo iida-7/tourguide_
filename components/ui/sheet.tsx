@@ -23,7 +23,7 @@ function SheetContent({
         className={cn(
           'fixed z-50 flex flex-col gap-3 bg-card p-5 text-ink transition-transform duration-300 ease-out',
           side === 'bottom' &&
-            'inset-x-0 bottom-0 max-h-[85dvh] rounded-t-xl border-t-[1.5px] border-ink data-ending-style:translate-y-full data-starting-style:translate-y-full',
+            'inset-x-0 bottom-0 max-h-[85dvh] rounded-t-lg border-t-[1.5px] border-ink data-ending-style:translate-y-full data-starting-style:translate-y-full',
           side === 'right' &&
             'inset-y-0 right-0 w-80 border-l-[1.5px] border-ink data-ending-style:translate-x-full data-starting-style:translate-x-full',
           className,

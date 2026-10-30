@@ -64,7 +64,7 @@ export function ShareCardModal({ title, generate, onClose }: Props) {
   }
 
   const btn =
-    'inline-flex min-h-11 items-center justify-center gap-1.5 rounded-md border-[1.5px] border-ink bg-card px-4 text-sm font-bold shadow-hard-sm transition-all hover:translate-x-px hover:translate-y-px hover:shadow-none disabled:opacity-50'
+    'btn-ghost inline-flex min-h-11 items-center justify-center gap-1.5 px-4 font-mono text-label-lg'
 
   return (
     <div className="print-hidden fixed inset-0 z-50 flex items-end justify-center bg-ink/60 p-0 md:items-center md:p-6" onClick={onClose}>
@@ -73,13 +73,13 @@ export function ShareCardModal({ title, generate, onClose }: Props) {
         aria-modal="true"
         aria-labelledby="share-title"
         onClick={(e) => e.stopPropagation()}
-        className="flex max-h-[92vh] w-full max-w-4xl flex-col rounded-t-xl border-[1.5px] border-ink bg-paper shadow-hard-lg md:rounded-xl"
+        className="flex max-h-[92vh] w-full max-w-4xl flex-col rounded-t-xl border-[1.5px] border-ink bg-paper shadow-hard-lg md:rounded-lg"
       >
         <div className="flex items-center justify-between gap-3 border-b-[1.5px] border-ink px-4 py-3 md:px-6">
-          <h2 id="share-title" className="text-base font-black md:text-lg">
+          <h2 id="share-title" className="text-headline-sm md:text-headline-md">
             🖼️ {title}
           </h2>
-          <button ref={closeRef} type="button" onClick={onClose} aria-label="닫기" className="flex size-11 items-center justify-center rounded-md hover:bg-paper-deep">
+          <button ref={closeRef} type="button" onClick={onClose} aria-label="닫기" className="flex size-11 items-center justify-center rounded hover:bg-paper-deep">
             <X className="size-5" aria-hidden="true" />
           </button>
         </div>
@@ -123,7 +123,7 @@ export function ShareCardModal({ title, generate, onClose }: Props) {
               공유하기 (카카오톡 등)
             </button>
           </div>
-          <p role="status" aria-live="polite" className="min-h-5 text-xs text-muted-foreground">
+          <p role="status" aria-live="polite" className="min-h-5 text-xs text-ink-muted">
             {note || '이미지는 내 기기에서만 만들어지며 서버로 전송되지 않아요.'}
           </p>
         </div>

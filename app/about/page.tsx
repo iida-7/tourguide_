@@ -34,7 +34,7 @@ function Section({ n, title, children }: { n: number; title: string; children: R
       aria-labelledby={`about-${n}`}
       className="animate-fade-up rounded-lg border-[1.5px] border-ink bg-card p-4 shadow-hard md:p-6"
     >
-      <h2 id={`about-${n}`} className="mb-4 flex items-center gap-3 text-base font-black md:text-lg">
+      <h2 id={`about-${n}`} className="mb-4 flex items-center gap-3 text-headline-sm md:text-headline-md">
         <span
           aria-hidden="true"
           className="grid size-9 shrink-0 -rotate-6 place-items-center rounded-full border-[3px] border-gold font-mono text-lg text-gold-ink"
@@ -52,8 +52,8 @@ export default function AboutPage() {
   return (
     <main className="mx-auto max-w-3xl space-y-6">
       <header className="space-y-1">
-        <h1 className="text-2xl font-black md:text-3xl">🔬 팩트 연구소 및 감정 기준실</h1>
-        <p className="text-sm text-muted-foreground">감정원이 어떤 기준으로 일정표를 읽는지 투명하게 공개합니다.</p>
+        <h1 className="text-headline-xl-mobile md:text-headline-lg">🔬 팩트 연구소 및 감정 기준실</h1>
+        <p className="text-sm text-ink-muted">감정원이 어떤 기준으로 일정표를 읽는지 투명하게 공개합니다.</p>
       </header>
 
       <Section n={1} title="3층 지식 커버리지 & 폴백 원칙">
@@ -61,9 +61,9 @@ export default function AboutPage() {
           {layers.map((l) => (
             <div
               key={l.n}
-              className={`${l.width} rounded-md border-[1.5px] border-ink px-4 py-3 text-center shadow-hard-sm ${l.bg}`}
+              className={`${l.width} rounded border-[1.5px] border-ink px-4 py-3 text-center shadow-hard-sm ${l.bg}`}
             >
-              <p className="text-sm font-black md:text-base">
+              <p className="text-sm font-bold md:text-base">
                 {l.n}층 · {l.title}
               </p>
               <p className="text-xs opacity-90 md:text-sm">{l.desc}</p>
@@ -78,8 +78,8 @@ export default function AboutPage() {
       <Section n={2} title="Gemini 무료 AI 보조 판독 4대 안전장치">
         <ul className="grid gap-3 sm:grid-cols-2">
           {guards.map((g) => (
-            <li key={g.title} className="rounded-md border-[1.5px] border-ai bg-ai/10 p-3">
-              <p className="font-black text-ai-ink">
+            <li key={g.title} className="rounded border-[1.5px] border-ai bg-ai/10 p-3">
+              <p className="font-bold text-ai-ink">
                 {g.n} {g.title}
               </p>
               <p className="mt-1 text-sm leading-relaxed">{g.desc}</p>
@@ -92,7 +92,7 @@ export default function AboutPage() {
         <div
           role="img"
           aria-label={`가중치: ${weights.map((w) => `${w.label} ${w.value}`).join(', ')}`}
-          className="flex h-10 overflow-hidden rounded-md border-[1.5px] border-ink"
+          className="flex h-10 overflow-hidden rounded border-[1.5px] border-ink"
         >
           {weights.map((w) => (
             <div
@@ -124,7 +124,7 @@ export default function AboutPage() {
       <div className="pb-4 text-center">
         <Link
           href="/"
-          className="inline-flex min-h-11 items-center rounded-md border-[1.5px] border-ink bg-ink font-mono px-5 font-black text-white shadow-cta transition-all hover:-translate-x-px hover:-translate-y-px hover:shadow-cta-hover"
+          className="btn-primary inline-flex min-h-11 items-center px-5 text-label-lg"
         >
           🚀 내 일정 감정하러 가기
         </Link>

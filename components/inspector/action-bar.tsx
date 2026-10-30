@@ -9,7 +9,7 @@ import type { PackageResult } from '@/lib/mock-result'
 import { ShareCardModal } from './share-card-modal'
 
 const buttonClass =
-  'flex min-h-11 items-center justify-center gap-2 rounded-md border-[1.5px] border-ink bg-card px-4 text-sm font-bold shadow-hard-sm transition-all hover:translate-x-px hover:translate-y-px hover:shadow-none active:translate-x-0.5 active:translate-y-0.5'
+  'btn-ghost flex min-h-11 items-center justify-center gap-2 px-4 font-mono text-label-lg'
 
 export function ActionBar({ result }: { result: PackageResult }) {
   const [toast, setToast] = useState('')
@@ -45,7 +45,7 @@ export function ActionBar({ result }: { result: PackageResult }) {
   return (
     <div className="print-hidden space-y-3 border-t-[1.5px] border-dashed border-ink/60 pt-6">
       <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
-        <button type="button" onClick={() => setShowCards(true)} className={`${buttonClass} bg-gold/30`}>
+        <button type="button" onClick={() => setShowCards(true)} className={buttonClass}>
           <ImageIcon className="size-4" aria-hidden="true" />
           카드 이미지 만들기
         </button>
@@ -75,7 +75,7 @@ export function ActionBar({ result }: { result: PackageResult }) {
       )}
       <div role="status" aria-live="polite" className="h-8 text-center">
         {toast && (
-          <span className="inline-flex animate-fade-up items-center gap-1.5 rounded-full border-[1.5px] border-ink bg-ink px-4 py-1 text-sm font-bold text-paper">
+          <span className="inline-flex animate-fade-up items-center gap-1.5 rounded border-[1.5px] border-ink bg-ink px-4 py-1 font-mono text-label-lg text-paper">
             <Check className="size-4" aria-hidden="true" />
             {toast}
           </span>

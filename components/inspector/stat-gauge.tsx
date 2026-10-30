@@ -48,13 +48,13 @@ export function StatGauge({ label, weight, score, max, note }: StatGaugeProps) {
     <div className="space-y-1.5">
       <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5">
         <p className="text-sm font-bold">
-          {label} <span className="font-mono text-xs font-medium text-muted-foreground">[가중치 {weight}%]</span>
+          {label} <span className="font-mono text-xs font-medium text-ink-muted">[가중치 {weight}%]</span>
         </p>
         <p className="text-sm">
           <b className="font-mono text-base">
             {score} / {max}점
           </b>{' '}
-          <span className="text-muted-foreground">({note})</span>
+          <span className="text-ink-muted">({note})</span>
         </p>
       </div>
       <SegmentBar value={score} max={max} label={`${label} ${score}점 (만점 ${max}점)`} />

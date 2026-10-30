@@ -55,7 +55,7 @@ export default function RootLayout({
     <html lang="ko" className={`${notoKr.variable} ${workSans.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable}`}>
       <body className="flex min-h-dvh flex-col">
         <SiteHeader />
-        <div className="mx-auto w-full max-w-[1080px] flex-1 px-4 py-6 md:px-6 md:py-10">
+        <div className="mx-auto w-full max-w-[1280px] flex-1 px-4 py-6 md:px-6 md:py-10 lg:px-10">
           {children}
         </div>
         <SiteFooter />

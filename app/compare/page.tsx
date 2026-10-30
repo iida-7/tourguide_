@@ -13,10 +13,10 @@ export default function ComparePage() {
         <p aria-hidden="true" className="text-5xl">
           ⚖️
         </p>
-        <h1 className="mt-3 text-2xl leading-tight font-black text-balance md:text-4xl">
+        <h1 className="mt-3 text-2xl leading-tight font-bold text-balance md:text-4xl">
           두 패키지, <span className="text-mint-ink">어느 쪽이</span> <span className="text-stamp-ink">더 알찰까?</span>
         </h1>
-        <p className="mt-3 text-base font-bold text-muted-foreground md:text-lg">일정표 2개를 붙여넣고 나란히 감정해보세요.</p>
+        <p className="mt-3 text-base font-bold text-ink-muted md:text-lg">일정표 2개를 붙여넣고 나란히 감정해보세요.</p>
       </section>
       <CompareView />
     </main>

@@ -31,6 +31,16 @@
   --color-paper: #f8fafc;
   --color-paper-deep: #f1f5f9;
   --color-navy: #1e3a8a;
+  /* border-ledger / ink-muted / badge tints */
+  --color-ledger: #cbd5e1;
+  --color-ink-muted: #64748b;
+  --color-ink-secondary: #334155;
+  --color-mint-bg: #ecfdf5;
+  --color-warn-bg: #fffbeb;
+  --color-window-bg: #fff7ed;
+  --color-ai-bg: #f1f5f9;
+  --color-gold-bg: #fef3c7;
+  --color-stamp-bg: #fef2f2;
   /* alert-crimson */
   --color-stamp: #dc2626;
   --color-stamp-ink: #b91c1c;
@@ -65,6 +75,53 @@
   --shadow-hard-lg: 6px 6px 0 0 #0f172a;
   --shadow-cta: 3px 3px 0 0 #1e3a8a;
   --shadow-cta-hover: 5px 5px 0 0 #1e3a8a;
+
+  /* DESIGN.md typography scale */
+  --text-headline-xl: 36px;
+  --text-headline-xl--line-height: 44px;
+  --text-headline-xl--letter-spacing: -0.03em;
+  --text-headline-xl--font-weight: 700;
+  --text-headline-xl-mobile: 28px;
+  --text-headline-xl-mobile--line-height: 34px;
+  --text-headline-xl-mobile--letter-spacing: -0.02em;
+  --text-headline-xl-mobile--font-weight: 700;
+  --text-headline-lg: 24px;
+  --text-headline-lg--line-height: 32px;
+  --text-headline-lg--letter-spacing: -0.02em;
+  --text-headline-lg--font-weight: 700;
+  --text-headline-md: 20px;
+  --text-headline-md--line-height: 28px;
+  --text-headline-md--letter-spacing: -0.01em;
+  --text-headline-md--font-weight: 600;
+  --text-headline-sm: 16px;
+  --text-headline-sm--line-height: 22px;
+  --text-headline-sm--letter-spacing: 0em;
+  --text-headline-sm--font-weight: 600;
+  --text-body-lg: 17px;
+  --text-body-lg--line-height: 26px;
+  --text-body-lg--letter-spacing: -0.01em;
+  --text-body-md: 15px;
+  --text-body-md--line-height: 24px;
+  --text-body-md--letter-spacing: -0.005em;
+  --text-body-sm: 13px;
+  --text-body-sm--line-height: 20px;
+  --text-body-sm--letter-spacing: 0em;
+  --text-label-lg: 14px;
+  --text-label-lg--line-height: 18px;
+  --text-label-lg--letter-spacing: 0.02em;
+  --text-label-lg--font-weight: 600;
+  --text-label-md: 12px;
+  --text-label-md--line-height: 16px;
+  --text-label-md--letter-spacing: 0.04em;
+  --text-label-md--font-weight: 500;
+  --text-label-sm: 10px;
+  --text-label-sm--line-height: 14px;
+  --text-label-sm--letter-spacing: 0.06em;
+  --text-label-sm--font-weight: 600;
+  --text-stamp-seal: 48px;
+  --text-stamp-seal--line-height: 48px;
+  --text-stamp-seal--letter-spacing: 0.05em;
+  --text-stamp-seal--font-weight: 700;
 
   --animate-stamp-in: stamp-in 0.55s cubic-bezier(0.2, 1.4, 0.4, 1) both;
   --animate-fade-up: fade-up 0.5s ease-out both;
@@ -124,6 +181,62 @@
     outline: 3px solid #1e3a8a;
     outline-offset: 2px;
   }
+}
+
+/* DESIGN.md §Components 1: Primary Audit Button — ink fill, navy hard shadow, mechanical press */
+@utility btn-primary {
+  border: 1.5px solid var(--color-ink);
+  border-radius: 4px;
+  background: var(--color-ink);
+  color: #fff;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  box-shadow: var(--shadow-cta);
+  transition:
+    transform 0.12s,
+    box-shadow 0.12s;
+  &:hover:not(:disabled) {
+    transform: translate(-1px, -1px);
+    box-shadow: var(--shadow-cta-hover);
+  }
+  &:active:not(:disabled) {
+    transform: translate(2px, 2px);
+    box-shadow: none;
+  }
+  &:disabled {
+    cursor: not-allowed;
+    border-color: color-mix(in srgb, var(--color-ink) 40%, transparent);
+    background: var(--color-paper-deep);
+    color: color-mix(in srgb, var(--color-ink) 60%, transparent);
+    box-shadow: none;
+  }
+}
+
+/* DESIGN.md §Components 1: Secondary / Ghost Stamp — white, ink text, dashed 1.5px #64748b, no blur */
+@utility btn-ghost {
+  border: 1.5px dashed var(--color-ink-muted);
+  border-radius: 4px;
+  background: #fff;
+  color: var(--color-ink);
+  font-weight: 600;
+  transition:
+    background-color 0.12s,
+    border-color 0.12s;
+  &:hover:not(:disabled) {
+    border-color: var(--color-ink);
+    background: var(--color-paper-deep);
+  }
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+}
+
+/* DESIGN.md §Elevation: inset evidence & quote blocks — sub-ledger fill, 3px navy left bar */
+@utility evidence-block {
+  background: var(--color-paper-deep);
+  border-left: 3px solid var(--color-navy);
+  border-radius: 4px;
 }
 
 @keyframes stamp-in {

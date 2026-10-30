@@ -12,8 +12,8 @@ export function OverviewTab({ result }: { result: PackageResult }) {
         aria-labelledby="stats-title"
         className="animate-fade-up rounded-lg border-[1.5px] border-ink bg-card p-4 shadow-hard md:p-6"
       >
-        <h2 id="stats-title" className="mb-4 text-lg font-black md:text-xl">
-          📊 패키지 6대 스탯 게이지 <span className="text-sm font-medium text-muted-foreground">(Hexagon Stats)</span>
+        <h2 id="stats-title" className="mb-4 text-headline-md">
+          📊 패키지 6대 스탯 게이지 <span className="text-sm font-medium text-ink-muted">(Hexagon Stats)</span>
         </h2>
         <div className="grid items-center gap-6 md:grid-cols-[minmax(0,400px)_1fr] md:gap-10">
           <RadarChart stats={result.stats} />
@@ -26,7 +26,7 @@ export function OverviewTab({ result }: { result: PackageResult }) {
       </section>
 
       <section aria-labelledby="country-title" className="animate-fade-up">
-        <h2 id="country-title" className="mb-3 text-lg font-black md:text-xl">
+        <h2 id="country-title" className="mb-3 text-headline-md">
           🌍 방문 국가별 1분 요약
         </h2>
         <ul className="grid gap-4 md:grid-cols-3">
@@ -35,13 +35,13 @@ export function OverviewTab({ result }: { result: PackageResult }) {
               key={c.name}
               className="rounded-lg border-[1.5px] border-ink bg-card p-4 shadow-hard transition-all hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-hard-lg"
             >
-              <p className="flex items-center gap-2 text-lg font-black">
+              <p className="flex items-center gap-2 text-headline-sm">
                 <span aria-hidden="true" className="text-3xl">
                   {c.flag}
                 </span>
                 {c.name}
               </p>
-              <p className="mt-2 text-sm leading-relaxed">&ldquo;{c.summary}&rdquo;</p>
+              <p className="mt-2 text-body-md">&ldquo;{c.summary}&rdquo;</p>
             </li>
           ))}
         </ul>

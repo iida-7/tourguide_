@@ -57,7 +57,7 @@ function PackageBox({
   return (
     <section className="space-y-3 rounded-lg border-[1.5px] border-ink bg-card p-4 shadow-hard md:p-5">
       <div className="flex items-center justify-between gap-2">
-        <h2 className="flex items-center gap-2 text-base font-black">
+        <h2 className="flex items-center gap-2 text-base font-bold">
           <span className={cn('flex size-7 items-center justify-center rounded border-[1.5px] border-ink font-mono text-sm text-white', s.dot)}>
             {label}
           </span>
@@ -66,7 +66,7 @@ function PackageBox({
         <button
           type="button"
           onClick={onSample}
-          className="inline-flex min-h-8 items-center gap-1.5 rounded border border-ink/40 bg-gold/25 px-2.5 py-1 text-xs font-bold hover:bg-gold/40 active:translate-y-px"
+          className="btn-ghost inline-flex min-h-11 items-center gap-1.5 px-2.5 py-1 font-mono text-label-md"
         >
           <Sparkles className="size-3.5 text-gold-ink" aria-hidden="true" />
           예시 불러오기
@@ -79,7 +79,7 @@ function PackageBox({
         onChange={(e) => onName(e.target.value)}
         aria-label={`상품 ${label} 이름`}
         placeholder={`상품 ${label} 이름 (예: ○○투어 서유럽 8일)`}
-        className="h-10 w-full rounded-md border-[1.5px] border-ink bg-paper px-3 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-ring"
+        className="h-10 w-full rounded border-[1.5px] border-ink bg-paper px-3 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-ring"
       />
       <Textarea
         value={text}
@@ -87,9 +87,9 @@ function PackageBox({
         aria-label={`상품 ${label} 일정표`}
         aria-invalid={over}
         placeholder="여행사 일정표 전체를 붙여넣으세요."
-        className="min-h-72 resize-y rounded-md border-[1.5px] border-ink bg-paper px-3 py-3 font-mono text-sm leading-relaxed placeholder:text-ink/40"
+        className="min-h-72 resize-y rounded border-[1.5px] border-ink bg-paper px-3 py-3 font-mono text-sm leading-relaxed placeholder:text-ink/40"
       />
-      <p className={cn('font-mono text-xs', over ? 'font-black text-stamp-ink' : 'text-muted-foreground')}>
+      <p className={cn('font-mono text-xs', over ? 'font-bold text-stamp-ink' : 'text-ink-muted')}>
         {text.length.toLocaleString('ko-KR')} / {MAX_CHARS.toLocaleString('ko-KR')}자
         {over && ' — 글자 수 초과'}
       </p>
@@ -157,7 +157,7 @@ function Cell({ row, side }: { row: CompareRow; side: Side }) {
     <td
       className={cn(
         'px-3 py-2 text-right font-mono text-sm tabular-nums md:text-base',
-        win ? cn(SIDE_STYLE[side].cell, 'font-black', SIDE_STYLE[side].text) : 'text-ink/80',
+        win ? cn(SIDE_STYLE[side].cell, 'font-bold', SIDE_STYLE[side].text) : 'text-ink/80',
       )}
     >
       {win && <Check className="mr-1 inline size-3.5 align-[-2px]" aria-label="우세" />}
@@ -224,21 +224,21 @@ function Results({
         <button
           type="button"
           onClick={onBack}
-          className="flex min-h-11 items-center gap-1.5 rounded-md text-sm font-bold underline-offset-4 hover:underline"
+          className="btn-ghost flex min-h-11 items-center gap-1.5 px-3 text-body-sm"
         >
           <ArrowLeft className="size-4" aria-hidden="true" />
           일정표 다시 입력하기
         </button>
         <div className="flex flex-wrap gap-2">
-          <button type="button" onClick={() => setShowCard(true)} className="inline-flex min-h-10 items-center gap-1.5 rounded-md border-[1.5px] border-ink bg-gold/30 px-3 text-sm font-bold shadow-hard-sm hover:translate-x-px hover:translate-y-px hover:shadow-none">
+          <button type="button" onClick={() => setShowCard(true)} className="btn-ghost inline-flex min-h-11 items-center gap-1.5 px-3 font-mono text-label-md">
             <ImageIcon className="size-4" aria-hidden="true" />
             카드 이미지
           </button>
-          <button type="button" onClick={copy} className="inline-flex min-h-10 items-center gap-1.5 rounded-md border-[1.5px] border-ink bg-card px-3 text-sm font-bold shadow-hard-sm hover:translate-x-px hover:translate-y-px hover:shadow-none">
+          <button type="button" onClick={copy} className="btn-ghost inline-flex min-h-11 items-center gap-1.5 px-3 font-mono text-label-md">
             {copied ? <Check className="size-4" aria-hidden="true" /> : <ClipboardCopy className="size-4" aria-hidden="true" />}
             {copied ? '복사됨!' : '마크다운 복사'}
           </button>
-          <button type="button" onClick={download} className="inline-flex min-h-10 items-center gap-1.5 rounded-md border-[1.5px] border-ink bg-card px-3 text-sm font-bold shadow-hard-sm hover:translate-x-px hover:translate-y-px hover:shadow-none">
+          <button type="button" onClick={download} className="btn-ghost inline-flex min-h-11 items-center gap-1.5 px-3 font-mono text-label-md">
             <Download className="size-4" aria-hidden="true" />
             .md 다운로드
           </button>
@@ -247,7 +247,7 @@ function Results({
 
       {/* 종합 판정 */}
       <section aria-labelledby="cmp-verdict" className="rounded-lg border-[1.5px] border-ink bg-card p-4 shadow-hard md:p-6">
-        <h2 id="cmp-verdict" className="mb-4 flex items-center gap-2 text-lg font-black md:text-xl">
+        <h2 id="cmp-verdict" className="mb-4 flex items-center gap-2 text-headline-md">
           <Scale className="size-5" aria-hidden="true" />
           1:1 비교 감정 결과
         </h2>
@@ -262,17 +262,17 @@ function Results({
                   isWinner ? cn('border-ink shadow-hard-sm', SIDE_STYLE[side].cell) : 'border-ink/30',
                 )}
               >
-                <p className={cn('truncate text-sm font-black md:text-base', SIDE_STYLE[side].text)}>{name}</p>
+                <p className={cn('truncate text-sm font-bold md:text-base', SIDE_STYLE[side].text)}>{name}</p>
                 <p className="mt-1 font-mono text-4xl font-bold md:text-5xl">{m.totalScore}</p>
-                <p className="text-xs font-bold text-muted-foreground">등급 {m.grade}</p>
-                {isWinner && <p className="mt-1 text-xs font-black text-stamp-ink">👑 종합 우세</p>}
+                <p className="text-xs font-bold text-ink-muted">등급 {m.grade}</p>
+                {isWinner && <p className="mt-1 text-xs font-bold text-stamp-ink">👑 종합 우세</p>}
               </div>
             )
           })}
         </div>
         <p className="mt-4 text-sm font-bold md:text-base" aria-live="polite">
           {overallName ? `종합 판정: ${overallName} 우세` : '종합 판정: 두 상품이 비슷해요'}
-          <span className="ml-2 font-mono text-xs font-normal text-muted-foreground">
+          <span className="ml-2 font-mono text-xs font-normal text-ink-muted">
             (항목 승수 {summary.winsA} : {summary.winsB}, 무승부 {summary.ties})
           </span>
         </p>
@@ -287,7 +287,7 @@ function Results({
 
       {/* 겹침 레이더 */}
       <section aria-labelledby="cmp-radar" className="rounded-lg border-[1.5px] border-ink bg-card p-4 shadow-hard md:p-6">
-        <h3 id="cmp-radar" className="mb-2 text-base font-black md:text-lg">
+        <h3 id="cmp-radar" className="mb-2 text-headline-sm md:text-headline-md">
           🕸️ 6대 스탯 겹쳐 보기
         </h3>
         <CompareRadar ra={ra} rb={rb} nameA={nameA} nameB={nameB} />
@@ -303,13 +303,13 @@ function Results({
 
       {/* 항목별 표 */}
       <section aria-labelledby="cmp-table" className="space-y-4">
-        <h3 id="cmp-table" className="text-base font-black md:text-lg">
+        <h3 id="cmp-table" className="text-headline-sm md:text-headline-md">
           📊 항목별 비교
         </h3>
         {groups.map((g) => (
           <div key={g} className="overflow-hidden rounded-lg border-[1.5px] border-ink bg-card shadow-hard">
             <table className="w-full border-collapse text-left">
-              <caption className="border-b-[1.5px] border-ink bg-paper-deep px-3 py-2 text-left text-sm font-black">{g}</caption>
+              <caption className="border-b-[1.5px] border-ink bg-paper-deep px-3 py-2 text-left text-sm font-bold">{g}</caption>
               <thead className="sr-only">
                 <tr>
                   <th scope="col">항목</th>
@@ -324,7 +324,7 @@ function Results({
                     <tr key={r.key} className="border-b border-dashed border-ink/25 last:border-b-0">
                       <th scope="row" className="px-3 py-2 text-sm font-bold">
                         {r.label}
-                        {r.better === null && <span className="ml-1.5 text-[10px] font-normal text-muted-foreground">(참고)</span>}
+                        {r.better === null && <span className="ml-1.5 text-[10px] font-normal text-ink-muted">(참고)</span>}
                       </th>
                       <Cell row={r} side="a" />
                       <Cell row={r} side="b" />
@@ -337,13 +337,13 @@ function Results({
       </section>
 
       <aside className="rounded-lg border-[1.5px] border-dashed border-ink bg-paper-deep/70 p-4 text-sm leading-relaxed">
-        <p className="font-black">📝 읽는 법</p>
+        <p className="font-bold">📝 읽는 법</p>
         <ul className="mt-1 list-disc space-y-1 pl-5">
           <li>✓ 표시와 색 배경이 해당 항목에서 더 유리한 쪽이에요. (입장·점수는 높을수록, 외관·차창·이동·비용은 낮을수록 유리)</li>
           <li>버스 이동 시간은 일정표에 &ldquo;버스 약 N시간&rdquo;처럼 적힌 것만 합산해요. 적혀 있지 않으면 0으로 보입니다.</li>
           {approx && (
             <li className="font-bold text-warn-ink">
-              일정표에서 필수 현지 경비(€)를 읽지 못한 상품은 평균 추정값(€150)이 적용돼 비용 비교가 부정확할 수 있어요.
+              일정표에 필수 현지 경비 금액이 없는 항목은 유럽 패키지 평균 참고값으로 계산돼 비용 비교가 정확하지 않을 수 있어요.
             </li>
           )}
           <li>같은 출발 월 기준으로 계산했고, 결과는 참고용입니다.</li>
@@ -393,7 +393,7 @@ export function CompareView() {
   return (
     <form onSubmit={run} className="space-y-5">
       <div className="print-hidden">
-        <Link href="/" className="flex min-h-11 w-fit items-center gap-1.5 rounded-md text-sm font-bold underline-offset-4 hover:underline">
+        <Link href="/" className="btn-ghost flex min-h-11 w-fit items-center gap-1.5 px-3 text-body-sm">
           <ArrowLeft className="size-4" aria-hidden="true" />
           하나만 감정하기
         </Link>
@@ -405,11 +405,11 @@ export function CompareView() {
       </div>
 
       <section className="rounded-lg border-[1.5px] border-ink bg-card p-4 shadow-hard md:p-5">
-        <label htmlFor="cmp-month" className="mb-2 block text-sm font-black">
+        <label htmlFor="cmp-month" className="mb-2 block text-sm font-bold">
           출발 월 (두 상품 공통 · 날씨 적합성 계산용)
         </label>
         <Select items={departureMonths} value={month} onValueChange={(v) => v && setMonth(v)}>
-          <SelectTrigger id="cmp-month" className="h-11 w-full rounded-md border-[1.5px] border-ink bg-paper px-3 text-base font-bold md:w-72">
+          <SelectTrigger id="cmp-month" className="h-11 w-full rounded border-[1.5px] border-ink bg-paper px-3 text-base font-bold md:w-72">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -431,17 +431,17 @@ export function CompareView() {
       <button
         type="submit"
         disabled={disabled}
-        className="flex min-h-16 w-full items-center justify-center gap-2 rounded-lg border-[1.5px] border-ink bg-ink font-mono px-4 py-4 text-base font-black text-white shadow-cta transition-all hover:-translate-x-px hover:-translate-y-px hover:shadow-cta-hover active:translate-x-0.5 active:translate-y-0.5 active:shadow-none disabled:cursor-not-allowed disabled:border-ink/40 disabled:bg-paper-deep disabled:text-ink/60 disabled:shadow-none disabled:hover:translate-x-0 disabled:hover:translate-y-0 md:text-xl"
+        className="btn-primary flex min-h-16 w-full items-center justify-center gap-2 px-4 py-4 text-label-lg md:text-headline-sm"
       >
         <Scale className="size-5" aria-hidden="true" />
         ⚖️ 두 패키지 나란히 감정하기
       </button>
       {disabled && (
-        <p className="text-center text-sm text-muted-foreground">두 상품 모두 일정표를 넣으면 버튼이 활성화돼요.</p>
+        <p className="text-center text-sm text-ink-muted">두 상품 모두 일정표를 넣으면 버튼이 활성화돼요.</p>
       )}
 
       <aside className="rounded-lg border-[1.5px] border-dashed border-ink bg-paper-deep/70 p-4 text-sm">
-        <p className="font-black">
+        <p className="font-bold">
           🛡️ 비교는 100% 브라우저 안에서만 계산돼요. 입력한 일정표는 서버로 보내지지 않습니다.
         </p>
       </aside>
