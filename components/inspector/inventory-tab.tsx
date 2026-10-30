@@ -1,25 +1,29 @@
 import type { InventoryItem } from '@/lib/mock-result'
 import { cn } from '@/lib/utils'
 
-const rarity: Record<InventoryItem['rarity'], { label: string; slot: string }> = {
-  common: { label: '일반', slot: 'border-ink/50 bg-card' },
-  rare: { label: '레어', slot: 'border-mint bg-mint/10' },
-  epic: { label: '에픽', slot: 'border-ai bg-ai/10' },
-  legend: { label: '전설', slot: 'border-gold bg-gold/25' },
+// DESIGN.md 색 토큰만 사용: 필수 = Secondary(Navy Archive) 강조, 권장 = 슬레이트, 있으면 좋음 = 가장 옅은 ledger.
+// 필수 = 없으면 여행에 지장 / 권장 = 있으면 크게 편함 / 있으면 좋음 = 선택
+const levelStyle: Record<InventoryItem['level'], { label: string; slot: string; tag: string }> = {
+  must: { label: '필수', slot: 'border-navy bg-navy/10', tag: 'border-navy bg-navy text-white' },
+  recommend: { label: '권장', slot: 'border-ink-muted bg-paper-deep', tag: 'border-ink-secondary bg-card text-ink-secondary' },
+  optional: { label: '있으면 좋음', slot: 'border-ledger bg-card', tag: 'border-ledger bg-card text-ink-muted' },
 }
 
 export function InventoryTab({ items }: { items: InventoryItem[] }) {
+  const count = (l: InventoryItem['level']) => items.filter((i) => i.level === l).length
   return (
     <section aria-labelledby="inventory-title" className="space-y-4">
       <div>
-        <h2 id="inventory-title" className="text-lg font-black md:text-xl">
+        <h2 id="inventory-title" className="text-headline-md">
           🎒 생존 인벤토리
         </h2>
-        <p className="text-sm text-muted-foreground">이 일정에서 살아남기 위해 챙겨야 할 아이템 {items.length}종</p>
+        <p className="text-sm text-ink-muted">
+          이 일정에 챙겨야 할 아이템 {items.length}종 · 필수 {count('must')} · 권장 {count('recommend')} · 있으면 좋음 {count('optional')}
+        </p>
       </div>
       <ul className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
         {items.map((item, i) => {
-          const r = rarity[item.rarity]
+          const r = levelStyle[item.level]
           return (
             <li
               key={item.name}
@@ -29,18 +33,14 @@ export function InventoryTab({ items }: { items: InventoryItem[] }) {
                 r.slot,
               )}
             >
-              <div className="flex items-start justify-between">
+              <div className="flex items-start justify-between gap-1">
                 <span aria-hidden="true" className="text-4xl leading-none">
                   {item.emoji}
                 </span>
-                <span className="rounded border border-ink/60 bg-card px-1.5 py-0.5 text-[10px] font-black">{r.label}</span>
+                <span className={cn('rounded border px-1.5 py-0.5 text-center font-mono text-label-sm', r.tag)}>{r.label}</span>
               </div>
-              <p className="text-sm font-black md:text-base">{item.name}</p>
-              <ul className="space-y-0.5 text-xs leading-snug text-muted-foreground">
-                {item.reasons.map((reason) => (
-                  <li key={reason}>· {reason}</li>
-                ))}
-              </ul>
+              <p className="text-headline-sm">{item.name}</p>
+              <p className="evidence-block px-2 py-1 text-body-sm text-slate-ink">{item.basis}</p>
             </li>
           )
         })}
