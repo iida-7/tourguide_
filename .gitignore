@@ -15,3 +15,12 @@ __v0_jsx-dev-runtime.ts
 node_modules
 .next/
 .DS_Store
+
+# 개인 입력 데이터 (일정표 원문 샘플)
+DOCS/원문*.txt
+
+# 로컬 진단 스크립트
+scripts/
+
+# 빌드 캐시 (자동 생성)
+tsconfig.tsbuildinfo
