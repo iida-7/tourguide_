@@ -1,5 +1,7 @@
-export type TourMode = 'entry' | 'exterior' | 'window' | 'ai'
-export type Basis = 'fact' | 'keyword'
+/** 관람 방식 판독 결과. 'unknown'은 원문에 관람 방식 언급이 없어 확정하지 못한 경우다 (외관/입장으로 억지 확정하지 않는다) */
+export type TourMode = 'entry' | 'exterior' | 'window' | 'unknown'
+/** 판독 근거: 사실(지식베이스) / 원문 표기·키워드 규칙 / Gemini 추정(참고용) */
+export type Basis = 'fact' | 'keyword' | 'gemini'
 export type TransportKind = 'flight' | 'bus' | 'train'
 
 export interface JourneyNode {
@@ -26,6 +28,7 @@ export interface CountrySummary {
   summary: string
 }
 
+/** 규칙으로 못 정한 줄을 Gemini에 물었을 때의 근거 */
 export interface AiReason {
   sentence: string
   line: number
@@ -33,15 +36,83 @@ export interface AiReason {
   verdict: string
 }
 
+/** 원문 줄 하나 (줄 번호 + 내용) */
+export interface SourceLine {
+  line: number
+  text: string
+}
+
+/** 방문지 판독에서 제외된 줄의 사유 (엔진 내부 분류용) */
+export type ExcludeReason = 'date' | 'ui' | 'decor' | 'meta' | 'notice' | 'transit' | 'not-site' | 'description' | 'city'
+
+/** 선택관광 카드에서 읽은 부가 정보 (요금 줄은 영수증 탭이 읽는다) */
+export interface OptionInfo {
+  fee?: string
+  duration?: string
+  alternative?: string
+}
+
 export interface ScheduleItem {
   time: string
+  /** 원문 문장 그대로 (불릿 한 줄) */
   text: string
+  /** 명소 이름: 설명 문장이 아니라 "카펠교"처럼 장소를 가리키는 말 */
+  name?: string
   line: number
   mode: TourMode
   basis: Basis
   source?: string
+  /** 판독 근거 (원문에서 무엇을 보고 판단했는지) */
   explain: string
   aiReason?: AiReason
+  /** 이 명소에 접어 넣은 설명 문단 (원문 줄 번호 유지) */
+  desc?: SourceLine[]
+  /** desc의 첫 줄이 설명 카드 제목이면 true (화면에서 소제목으로 보여 준다) */
+  descHasTitle?: boolean
+  /** 선택관광 카드 */
+  option?: OptionInfo
+}
+
+/** 일정 흐름 구간: "스위스/루체른"처럼 도시 줄 하나와 그 아래에 모인 내용 */
+export interface DaySection {
+  country?: string
+  city?: string
+  cityLine?: number
+  /** 도시 소개/이동 문장 (예: "…루체른으로 이동 _ 약 1시간 소요") */
+  moves: GroundMove[]
+  intro: SourceLine[]
+  /** 이 구간의 방문지 (ScheduleItem.line 목록) */
+  itemLines: number[]
+}
+
+export interface GroundMove {
+  line: number
+  text: string
+  duration?: string
+}
+
+/** 항공 이동 카드: 흩어진 날짜/시각/편명/소요시간 줄을 하나로 묶은 것 */
+export interface FlightCard {
+  from?: string
+  to?: string
+  depTime?: string
+  depDate?: string
+  arrTime?: string
+  arrDate?: string
+  flightNo?: string
+  duration?: string
+  lines: number[]
+}
+
+/** 어느 명소에도 붙지 않은 소개/안내 카드 (본문 줄 번호 유지) */
+export interface InfoCard {
+  title: SourceLine
+  sub?: SourceLine
+  lines: SourceLine[]
+}
+
+export interface Notice extends SourceLine {
+  kind: 'notice' | 'meeting' | 'lodging' | 'meal'
 }
 
 export interface DaySchedule {
@@ -49,16 +120,48 @@ export interface DaySchedule {
   flag: string
   city: string
   tagline: string
+  /** 판독 대상 방문지(불릿=명소, 선택관광). 설명 문단은 각 항목의 desc로 접혀 있다 */
   items: ScheduleItem[]
+  /** 일차 헤더 아래 날짜 줄 ("2026-11-10 화요일") */
+  date?: SourceLine
+  flights?: FlightCard[]
+  sections?: DaySection[]
+  /** 식사·숙박·유의사항 영역으로 옮긴 원문 줄 */
+  notices?: Notice[]
+  /** 명소에 붙지 못한 소개/안내 카드 */
+  infoCards?: InfoCard[]
+  /** 화면에서 숨긴 UI 문구 줄 번호 (펼치기/접기, 자세히보기 등). 데이터에는 남아 있다 */
+  hiddenLines?: SourceLine[]
+  /** 어느 범주에도 못 넣은 원문 */
+  leftover?: SourceLine[]
+  /** 식사·숙박으로 읽은 원문 줄 (줄 번호 표시용) */
+  mealLines?: SourceLine[]
+  lodgingLines?: SourceLine[]
   meals: string
   lodging: string
+  /** 원문에서 식사 정보를 찾지 못해 기본값을 채운 경우 */
+  mealsEstimated?: boolean
+  /** 원문에서 숙박 정보를 찾지 못해 기본값을 채운 경우 */
+  lodgingEstimated?: boolean
 }
+
+export type Currency = 'KRW' | 'EUR' | 'USD' | 'GBP' | 'CHF'
+
+/** 원문 확인(금액 있음) / 언급만 있고 금액 없음 / 원문에 언급 자체가 없음 */
+export type ReceiptStatus = 'found' | 'mentioned' | 'absent'
 
 export interface ReceiptLine {
   id: string
   label: string
+  /** 필수 경비의 상태. 선택관광은 항상 금액이 있는 항목만 담는다 */
+  status?: ReceiptStatus
+  /** status가 mentioned일 때 원문에서 따온 문구 */
+  quote?: string
+  /** EUR 환산액. 원문이 EUR이 아니면 `original`의 통화를 가정 환율로 환산한 값 */
   eur: number
   line: number
+  /** 원문이 EUR이 아닌 통화로 적혀 있을 때의 원래 금액 */
+  original?: { currency: Currency; amount: number }
 }
 
 export interface OptionLine extends ReceiptLine {
@@ -78,7 +181,10 @@ export interface InventoryItem {
   emoji: string
   name: string
   reasons: [string, string]
-  rarity: 'common' | 'rare' | 'epic' | 'legend'
+  /** 필수(없으면 지장) > 권장(있으면 크게 편함) > 선택(있으면 좋음) */
+  level: 'must' | 'recommend' | 'optional'
+  /** 분류 근거 한 줄 (예: "도보 1.5만보 이상 → 필수") */
+  basis: string
 }
 
 export interface PackageResult {
@@ -96,13 +202,20 @@ export interface PackageResult {
     eurToKrw: number
     mandatory: ReceiptLine[]
     options: OptionLine[]
-    /** 원문에서 필수 경비 금액을 찾지 못해 평균 추정값을 쓴 경우 true */
+    /** 필수 경비 중 원문에 금액이 없어 평균 참고값을 쓴 항목이 있으면 true */
     mandatoryEstimated?: boolean
+    /** 금액 없이 이름만 나온 선택관광 수 */
+    optionsWithoutAmount?: number
+    /** 원문에서 상품가를 찾지 못해 기본값을 쓴 경우 true */
+    packagePriceEstimated?: boolean
   }
   valuation: {
     baseScore: number
+    /** 불분명한 항목(판독 불가)도 반영해 다시 계산한 점수 */
     aiScore: number
     aiNote: string
+    /** aiNote에 쓴 실제 판독 수치 */
+    modeCounts?: { entry: number; exterior: number; window: number; unknown: number }
     fits: FitItem[]
     pros: string
     cons: string
@@ -192,15 +305,9 @@ export const mockResult: PackageResult = {
           time: '오후',
           text: '몽마르뜨 언덕 및 사크레쾨르 대성당 조망 및 주변 관광',
           line: 22,
-          mode: 'ai',
+          mode: 'exterior',
           basis: 'keyword',
-          explain: '⚠️ AI 판독 근거: "조망" 키워드로 외관 관람 판정',
-          aiReason: {
-            sentence: '몽마르뜨 언덕 및 사크레쾨르 대성당 조망 및 주변 관광',
-            line: 22,
-            keyword: '조망',
-            verdict: '외관·차창',
-          },
+          explain: "원문에 '조망' 표현이 있어 외부 관람으로 판단 (키워드 기준)",
         },
       ],
       meals: '조(호텔식) / 중(에스카르고 현지식) / 석(한식)',
@@ -331,14 +438,14 @@ export const mockResult: PackageResult = {
           time: '오후',
           text: '나보나 광장 및 판테온 자유 시간',
           line: 82,
-          mode: 'ai',
+          mode: 'unknown',
           basis: 'keyword',
-          explain: '⚠️ AI 판독 근거: "자유 시간" 문맥으로 외관 관람 판정',
+          explain: '원문에 관람 방식 표기가 없어 확인 불가',
           aiReason: {
             sentence: '나보나 광장 및 판테온 자유 시간',
             line: 82,
             keyword: '자유 시간',
-            verdict: '외관·차창',
+            verdict: '판단불가',
           },
         },
       ],
@@ -368,9 +475,9 @@ export const mockResult: PackageResult = {
     packagePriceKrw: 1_990_000,
     eurToKrw: 1500,
     mandatory: [
-      { id: 'guide', label: '기사/가이드 경비 (1인당)', eur: 100, line: 88 },
-      { id: 'citytax', label: '유럽 도시세 (City Tax / 전 일정 누적)', eur: 35, line: 92 },
-      { id: 'tip', label: '식당 물값 및 테이블 매너 팁 (권장)', eur: 15, line: 104 },
+      { id: 'guide', label: '기사/가이드 경비 (1인당)', eur: 100, line: 88, status: 'found' },
+      { id: 'citytax', label: '유럽 도시세 (City Tax / 전 일정 누적)', eur: 35, line: 92, status: 'found' },
+      { id: 'tip', label: '식당 물값 및 테이블 매너 팁 (권장)', eur: 15, line: 104, status: 'found' },
     ],
     options: [
       { id: 'gondola', tag: '추천', label: '베니스 곤돌라 & 수상택시 투어', eur: 70, line: 112 },
@@ -381,7 +488,8 @@ export const mockResult: PackageResult = {
   valuation: {
     baseScore: 78,
     aiScore: 75,
-    aiNote: 'AI 판독 반영 시 모호했던 방문지 2곳이 외관으로 확정되어 깊이 점수 소폭 하락',
+    aiNote: "외부 관람 2곳 · 확인 불가 1곳. 내부 입장이 확인되지 않은 1곳을 '외부 관람 수준'으로 보수적으로 반영해 관광 깊이 점수를 조정했어요.",
+    modeCounts: { entry: 3, exterior: 2, window: 0, unknown: 1 },
     fits: [
       { emoji: '👨‍👩‍👧', label: '부모님 효도 관광', score: 58, verdict: '보통', tone: 'warn', note: '4일차 버스 6시간 탑승 주의' },
       { emoji: '👫', label: '2030 커플/신혼', score: 82, verdict: '추천', tone: 'good', note: '파리/로마 낭만 스팟 다수' },
@@ -391,14 +499,14 @@ export const mockResult: PackageResult = {
     cons: '파리 숙소가 시외곽에 위치하여 석식 후 자유시간 활용이 제한적임',
   },
   inventory: [
-    { emoji: '💺', name: '버스 방석', reasons: ['이동 28시간', '엉덩이 구출용'], rarity: 'epic' },
-    { emoji: '👟', name: '쿠션 운동화', reasons: ['로마 자갈길', '하루 1.8만보'], rarity: 'legend' },
-    { emoji: '🔌', name: '멀티 어댑터', reasons: ['국가별 소켓', '호환 대비'], rarity: 'rare' },
-    { emoji: '💶', name: '유로 소액권', reasons: ['가이드비·팁', '현금 필수'], rarity: 'epic' },
-    { emoji: '🧥', name: '얇은 패딩', reasons: ['융프라우 설산', '영하 기온 대비'], rarity: 'rare' },
-    { emoji: '☕', name: '컵라면·고추장', reasons: ['호텔 석식 부실', '대비 비상식량'], rarity: 'common' },
-    { emoji: '🧴', name: '접이식 우산', reasons: ['5월 파리 변덕', '소나기 방어'], rarity: 'common' },
-    { emoji: '💊', name: '멀미약·소화제', reasons: ['산악도로 대비', '버스 탑승 전'], rarity: 'rare' },
+    { emoji: '👟', name: '쿠션 운동화', reasons: ['로마 자갈길', '하루 1.8만보'], level: 'must', basis: '도보 1.5만보 이상 → 필수' },
+    { emoji: '🔌', name: '멀티 어댑터', reasons: ['국가별 소켓', '호환 대비'], level: 'must', basis: '스위스 콘센트 규격이 달라 → 필수' },
+    { emoji: '💺', name: '버스 방석', reasons: ['이동 28시간', '엉덩이 구출용'], level: 'recommend', basis: '버스 이동 28시간 → 권장' },
+    { emoji: '💶', name: '유로 소액권', reasons: ['가이드비·팁', '현금 필수'], level: 'recommend', basis: '현지 지불 경비가 있어 → 권장' },
+    { emoji: '🧥', name: '얇은 패딩', reasons: ['융프라우 설산', '영하 기온 대비'], level: 'recommend', basis: '융프라우 고산 일정 → 권장' },
+    { emoji: '💊', name: '멀미약·소화제', reasons: ['산악도로 대비', '버스 탑승 전'], level: 'recommend', basis: '산악도로 버스 이동 → 권장' },
+    { emoji: '☕', name: '컵라면·고추장', reasons: ['호텔 석식 부실', '대비 비상식량'], level: 'optional', basis: '식사는 일정에 포함 → 있으면 좋음' },
+    { emoji: '🧴', name: '접이식 우산', reasons: ['5월 파리 변덕', '소나기 방어'], level: 'optional', basis: '5월 소나기 대비 → 있으면 좋음' },
   ],
 }
 
@@ -423,4 +531,16 @@ export const departureMonths = [
 
 export function formatKrw(n: number) {
   return `${n.toLocaleString('ko-KR')}원`
+}
+
+export function formatEur(n: number) {
+  return `€${n.toLocaleString('ko-KR', { maximumFractionDigits: 1 })}`
+}
+
+const CURRENCY_SYMBOL: Record<Currency, string> = { KRW: '원', EUR: '€', USD: '$', GBP: '£', CHF: 'CHF ' }
+
+/** 원문 통화 금액을 원문 표기에 가깝게 보여준다 (예: $50, 40,000원) */
+export function formatOriginal(o: { currency: Currency; amount: number }) {
+  const n = o.amount.toLocaleString('ko-KR', { maximumFractionDigits: 2 })
+  return o.currency === 'KRW' ? `${n}원` : `${CURRENCY_SYMBOL[o.currency]}${n}`
 }
